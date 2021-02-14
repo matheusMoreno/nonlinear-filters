@@ -1,4 +1,10 @@
-AutomaticMusicTrackRemoval/
+# Folders with codes not used
+lordelo/
+mackeyglass/
+
+# Folders with code not ready for experiments
+unscented/
+
 *.wav
 *.asv
 *.ini
