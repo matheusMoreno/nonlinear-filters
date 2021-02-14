@@ -1,5 +1,5 @@
-function y_est = wiener_cola(x, y, L, M)
-%WIENER_COLA Linear Wiener estimation with constant overlap-add method
+function y_est = wienerCola(x, y, L, M)
+%WIENERCOLA Linear Wiener estimation with constant overlap-add method
 %   x: input signal to be filtered
 %   y: output signal, correlated with x
 %   L: size of each filter

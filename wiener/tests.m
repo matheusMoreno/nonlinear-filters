@@ -37,7 +37,7 @@ ylabel('y(n), y_est(n)');
 title('Linear Wiener filter for filter estimation');
 
 
-%% Second case: one step prediction with wiener_cola()
+%% Second case: one step prediction with wienerCola()
 y_pred = x(2:end);
 x_pred = x(1:end - 1);
 sig_len = length(y_pred);
@@ -47,7 +47,7 @@ size_filter = 20;
 hop = 100;
 
 % Estimating the signal
-y_pred_est = wiener_cola(x_pred, y_pred, size_filter, hop);
+y_pred_est = wienerCola(x_pred, y_pred, size_filter, hop);
 
 figure
 hold on
@@ -59,7 +59,7 @@ ylabel('y(n), y_est(n)');
 title('Linear Wiener filter for one step prediction');
 
 
-%% Third case: noisy filtered signal with wiener_cola()
+%% Third case: noisy filtered signal with wienerCola()
 filt = [-3, -2, -1, 1, 2, 3];
 y_filt = fftfilt(filt, x);
 y_noisy = y_filt + randn(length(y_filt), 1) * 0.25;
@@ -70,7 +70,7 @@ size_filter = 34;
 hop = 256;
 
 % Estimating the signal
-y_noisy_est = wiener_cola(x, y_noisy, size_filter, hop);
+y_noisy_est = wienerCola(x, y_noisy, size_filter, hop);
 
 figure
 subplot(1,2,1);
@@ -91,7 +91,7 @@ ylabel('y(n), y_est(n)');
 title('Linear Wiener filter for filtered signal noise reduction');
 
 
-%% Fourth case: nonlinear filter with wiener_cola()
+%% Fourth case: nonlinear filter with wienerCola()
 y_nonl = zeros(length(x), 1);
 sig_len = length(x);
 x0 = 0;
@@ -111,7 +111,7 @@ size_filter = 10;
 hop = 50;
 
 % Estimating the signal
-y_nonl_est = wiener_cola(x, y_nonl, size_filter, hop);
+y_nonl_est = wienerCola(x, y_nonl, size_filter, hop);
 
 figure
 hold on
@@ -122,7 +122,7 @@ xlabel('n');
 ylabel('y(n), y_est(n)');
 title('Linear Wiener filter for nonlinear prediction');
 
-%% Fifth case: noisy nonlinear filter with wiener_cola()
+%% Fifth case: noisy nonlinear filter with wienerCola()
 y_nnl = zeros(length(x), 1);
 N = length(x);
 x0 = 0;
@@ -145,7 +145,7 @@ size_filter = 10;
 hop = 50;
 
 % Estimating the signal
-y_nonl_est = wiener_cola(x, y_nnl, size_filter, hop);
+y_nonl_est = wienerCola(x, y_nnl, size_filter, hop);
 
 figure
 subplot(1,2,1);
