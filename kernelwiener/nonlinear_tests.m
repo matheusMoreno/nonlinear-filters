@@ -15,19 +15,17 @@ ylabel('x(n)');
 title('Original signal');
 
 
-%% First case: filter estimation
+%% First case: filter estimation with kernelWiener()
 filt = [-3, -2, -1, 1, 2, 3];
 y_filt = fftfilt(filt, x);
 sig_len = length(y_filt);
 
 % Filter specifications
-sizeFilters = 10;
-hop = 500;
+sizeFilters = 6;
 sigma = 10;
 
 % Creating the filters
-[y_filt_est, MSE] = kernelWiener(x, y_filt, sizeFilters, hop, sigma);
-fprintf('MSE for filter estimation: %d\n', MSE);
+y_filt_est = kernelWiener(x, y_filt, sizeFilters, sigma);
 
 % Plotting the filtered signal and the estimation
 figure
@@ -40,19 +38,17 @@ ylabel('y(n), y_est(n)');
 title('Kernel Wiener Filter for filter estimation');
 
 
-%% Second case: one step prediction
+%% Second case: one step prediction with kernelWiener()
 y_pred = x(2:end);
 x_pred = x(1:end - 1);
 sig_len = length(y_pred);
 
 % Filter specifications
-sizeFilters = 10;
-hop = 200;
-sigma = 0.16;
+sizeFilters = 34;
+sigma = 1e-4;
 
 % Estimating the signal
-[y_pred_est, MSE] = kernelWiener(x_pred, y_pred, sizeFilters, hop, sigma);
-fprintf('MSE for one step prediction: %d\n', MSE);
+y_pred_est = kernelWiener(x_pred, y_pred, sizeFilters, sigma);
 
 figure
 hold on
@@ -76,9 +72,8 @@ hop = 200;
 sigma = 3;
 
 % Estimating the signal
-[y_noisy_est, ~] = kernelWiener(x, y_noisy, sizeFilters, hop, sigma);
+y_noisy_est = kernelWiener(x, y_noisy, sizeFilters, sigma);
 MSE = mean((y_filt - y_noisy_est) .^ 2);
-fprintf('MSE for filtered noisy signal estimation: %d\n', MSE);
 
 figure
 subplot(1,2,1);
@@ -116,12 +111,10 @@ end;
 
 % Filter specifications
 sizeFilters = 10;
-hop = 100;
 sigma = 0.05;
 
 % Estimating the signal
-[y_nonl_est, MSE] = kernelWiener(x, y_nonl, sizeFilters, hop, sigma);
-fprintf('MSE for nonlinear prediction: %d\n', MSE);
+y_nonl_est = kernelWiener(x, y_nonl, sizeFilters, sigma);
 
 figure
 hold on
@@ -157,9 +150,7 @@ hop = 200;
 sigma = 0.05;
 
 % Estimating the signal
-[y_nonl_est, ~] = kernelWiener(x, y_nnl, sizeFilters, hop, sigma);
-MSE = mean((y_nonl - y_nonl_est) .^ 2);
-fprintf('MSE for nonlinear noisy prediction: %d\n', MSE);
+y_nonl_est = kernelWiener(x, y_nnl, sizeFilters, sigma);
 
 figure
 subplot(1,2,1);
