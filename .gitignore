@@ -5,7 +5,15 @@ mackeyglass/
 # Folders with code not ready for experiments
 unscented/
 
+# Code used, but not mine
+rnonlin/
+
+# Media files
 *.wav
+*.eps
+
+# Useless files created by MATLAB, Windows or Mac
 *.asv
 *.ini
-*.eps
+*.DS_Store
+*/Icon*
