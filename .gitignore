@@ -14,6 +14,6 @@ rnonlin/
 
 # Useless files created by MATLAB, Windows or Mac
 *.asv
-*.ini
-*.DS_Store
-*/Icon*
+**.ini
+**.DS_Store
+**/Icon*
