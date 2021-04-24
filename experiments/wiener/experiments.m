@@ -5,9 +5,11 @@
 % NOTES:
 %   - By convention, x_1 is always the reference signal
 
-% Add path for the directories of the metrics and the current method
+%% Add path for the directories of the metrics and the current method
+
 addpath('../../paqm:../../rnonlin:../../sdr')
 addpath('../../wiener')
+
 
 %% Create results file
 
