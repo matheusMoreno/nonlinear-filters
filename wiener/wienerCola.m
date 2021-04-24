@@ -63,9 +63,9 @@ function y_est = wienerCola(x, y, L, M)
         % Adding the values with a window
         y_est(i:i + M - 1) = y_est(i:i + M - 1) + y_est_i_win;
 
-        i = i + M - overlap + 1;
+        i = i + M - overlap;
     end;
     
     % Setting the final variables
-    y_est = y_est(1:length(y));
+    y_est = y_est(1:N);
 end
