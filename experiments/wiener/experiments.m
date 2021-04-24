@@ -5,6 +5,9 @@
 % NOTES:
 %   - By convention, x_1 is always the reference signal
 
+% Add path for the directories of the metrics and the current method
+addpath('../../paqm:../../rnonlin:../../sdr')
+addpath('../../wiener')
 
 %% Create results file
 
@@ -17,7 +20,7 @@ fclose(fd);
 %% Import audios and plot spectograms
 
 % Reference signal
-x_filepath = '.\x\x_1.wav';
+x_filepath = './x/x_1.wav';
 [x, Fs_x] = audioread(x_filepath);
 
 % Assert that the audio is mono
@@ -34,13 +37,14 @@ ylim(gca, [0, 10]);
 colormap('bone');
 colorbar('off');
 xlabel('Tempo [s]');
-ylabel('Frequência [kHz]');
+ylabel('FrequÃªncia [kHz]');
 set(gcf,'Position',[10 10 1250 400]);
+saveas(gcf, 'wiener-reference-signal.png', 'png');
 saveas(gcf, 'wiener-reference-signal.eps', 'epsc');
 
 
 % Dialogue signal
-x2_filepath = '.\x\x_2.wav';
+x2_filepath = './x/x_2.wav';
 [x2, Fs_x2] = audioread(x2_filepath);
 
 assert(size(x2, 2) == 1, 'The audio must be mono.')
@@ -56,8 +60,9 @@ ylim(gca, [0, 20]);
 colormap('bone');
 colorbar('off');
 xlabel('Tempo [s]');
-ylabel('Frequência [kHz]');
+ylabel('FrequÃªncia [kHz]');
 set(gcf,'Position',[10 10 1250 400]);
+saveas(gcf, 'wiener-dialogue-signal.png', 'png');
 saveas(gcf, 'wiener-dialogue-signal.eps', 'epsc');
 
 
@@ -79,7 +84,7 @@ fclose(fd);
 
 for i = 1:6,
     % Import observed signal
-    y_filepath = strjoin({'.\y\y_', num2str(i), '.wav'}, '');
+    y_filepath = strjoin({'./y/y_', num2str(i), '.wav'}, '');
     [y, Fs_y] = audioread(y_filepath);
     
     % Remove paddings, if present
@@ -97,7 +102,7 @@ for i = 1:6,
 
 
     % Import filtered reference signal
-    d_filepath = strjoin({'.\d\d_', num2str(i), '.wav'}, '');
+    d_filepath = strjoin({'./d/d_', num2str(i), '.wav'}, '');
     [d, Fs_d] = audioread(d_filepath);
     
     % Remove paddings, if present
@@ -136,12 +141,12 @@ for i = 1:6,
         sprintf('EXPERIMENT %d\n\n', i), ...
         sprintf('Reference signal (x) metrics:\n'), ...
         sprintf('SDR = %3.2f dB\n', SDR_xy), ...
-        sprintf('PAQM score = %3.4f\n', PAQM_score_xy), ...
-        sprintf('Rnonlin score (log) = %.4f\n\n', Rnonlin_score_xy), ...
+        sprintf('PAQM score = %3.2f\n', PAQM_score_xy), ...
+        sprintf('Rnonlin score (log) = %.3f\n\n', Rnonlin_score_xy), ...
         sprintf('Estimated signal (d_hat) metrics:\n'), ...
         sprintf('SDR = %3.2f dB\n', SDR_yyhat), ...
-        sprintf('PAQM score = %3.4f\n', PAQM_score_yyhat), ...
-        sprintf('Rnonlin score (log) = %.4f\n', Rnonlin_score_yyhat)
+        sprintf('PAQM score = %3.2f\n', PAQM_score_yyhat), ...
+        sprintf('Rnonlin score (log) = %.3f\n', Rnonlin_score_yyhat)
     }, '');
     
     fprintf(results_str);
@@ -151,6 +156,6 @@ for i = 1:6,
 
 
     % Save audio estimation
-    d_hat_filepath = strjoin({'.\d_hat\d_hat_', num2str(i), '.wav'}, '');
+    d_hat_filepath = strjoin({'./d_hat/d_hat_', num2str(i), '.wav'}, '');
     audiowrite(d_hat_filepath, d_hat, Fs_d);
 end;
