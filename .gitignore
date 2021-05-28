@@ -6,12 +6,17 @@ mackeyglass/
 unscented/
 
 # Code used, but not mine
-paqm/
-rnonlin/
+rnonlin/*
+paqm/*
+
+# Some PAQM codes are mine
+!paqm/gen*
+!paqm/PAQMToMOSData.csv
 
 # Media files
 *.wav
 *.eps
+*.png
 
 # Useless files created by MATLAB, Windows or Mac
 *.asv
