@@ -75,7 +75,7 @@ sigmas = [1e-2; 3e-2; 1e-1; 3e-1; 1; 3; 10];
 
 x_gpu = gpuArray(x);
 
-for sigma = sigmas,
+for sigma = sigmas
     parameters_str = strjoin({
         '\n###############################\n\n', ...
         sprintf('\nFilter length: L = %d\n', L), ...
@@ -88,18 +88,18 @@ for sigma = sigmas,
     fprintf(fd, parameters_str);
     fclose(fd);
 
-    for i = 1:6,
+    for i = 1:6
         % Import observed signal
         y_filepath = strjoin({'.\y\y_', num2str(i), '.wav'}, '');
         [y, Fs_y] = audioread(y_filepath);
 
         % Remove paddings, if present
         len_pad = length(y) - length(x);
-        if len_pad > 0,
+        if len_pad > 0
             start_pad = 528;
             end_pad = len_pad - start_pad;
             y = y(start_pad + 1:end - end_pad);
-        end;
+        end
 
         % Assertions
         assert(size(y, 2) == 1, 'The audio must be mono.');
@@ -113,11 +113,11 @@ for sigma = sigmas,
 
         % Remove paddings, if present
         len_pad = length(d) - length(x);
-        if len_pad > 0,
+        if len_pad > 0
             start_pad = 528;
             end_pad = len_pad - start_pad;
             d = d(start_pad + 1:end - end_pad);
-        end;
+        end
 
         % Assertions
         assert(size(d, 2) == 1, 'The audio must be mono.');
@@ -165,5 +165,5 @@ for sigma = sigmas,
         % Save audio estimation
         d_hat_filepath = strjoin({'.\d_hat\d_hat_', num2str(i), '.wav'}, '');
         audiowrite(d_hat_filepath, d_hat, Fs_d);
-    end;
-end;
+    end
+end
