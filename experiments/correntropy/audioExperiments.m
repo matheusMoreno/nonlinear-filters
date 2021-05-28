@@ -8,7 +8,7 @@
 %% Add path for the directories of the metrics and the current method
 
 addpath('../../paqm:../../rnonlin:../../sdr')
-addpath('../../kernelwiener')
+addpath('../../correntropy')
 
 
 %% Create results file
