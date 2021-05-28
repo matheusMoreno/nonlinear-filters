@@ -1,5 +1,5 @@
-function d_est = kernelWiener(x, y, L, sigma)
-%KERNELWIENER estimates a nonlinear filtering using a gaussian kernel
+function d_est = correntropyFilter(x, y, L, sigma)
+%CORRENTROPYFILTER estimates a nonlinear filtering using a gaussian kernel
 %   x: input signal to be filtered
 %   y: output signal, correlated with x
 %   L: size of filter
@@ -23,10 +23,10 @@ function d_est = kernelWiener(x, y, L, sigma)
     corr = corr(L:L + N - 1, L:L + N - 1);
 
     d_est = flip(corr * flip(y)) / N;
-    
+
     % Correcting the scale by making the signals fit in the same range
     scale = range(d_est) / range(y);
-    if scale ~= 0 && ~isnan(scale),
+    if scale ~= 0 && ~isnan(scale)
         d_est = d_est / scale;
-    end;
+    end
 end

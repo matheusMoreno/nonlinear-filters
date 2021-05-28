@@ -7,9 +7,9 @@ function K = gaussianKernel(x, y, sigma, type)
 
     diff = x - y;
 
-    if strcmp(type, 'vector'),
+    if strcmp(type, 'vector')
         K = exp(-diff' * diff / (2 * sigma^2)) / (sqrt(2 * pi) * sigma);
-    elseif strcmp(type, 'elemwise'),
+    elseif strcmp(type, 'elemwise')
         K = exp(-diff .^ 2 / (2 * sigma^2)) / (sqrt(2 * pi) * sigma);
-    end;
+    end
 end
