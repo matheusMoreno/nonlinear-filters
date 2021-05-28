@@ -84,18 +84,18 @@ fd = fopen('results.txt', 'a');
 fprintf(fd, parameters_str);
 fclose(fd);
 
-for i = 1:6,
+for i = 1:6
     % Import observed signal
     y_filepath = strjoin({'./y/y_', num2str(i), '.wav'}, '');
     [y, Fs_y] = audioread(y_filepath);
-    
+
     % Remove paddings, if present
     len_pad = length(y) - length(x);
-    if len_pad > 0,
+    if len_pad > 0
         start_pad = 528;
         end_pad = len_pad - start_pad;
         y = y(start_pad + 1:end - end_pad);
-    end;
+    end
 
     % Assertions
     assert(size(y, 2) == 1, 'The audio must be mono.');
@@ -106,25 +106,28 @@ for i = 1:6,
     % Import filtered reference signal
     d_filepath = strjoin({'./d/d_', num2str(i), '.wav'}, '');
     [d, Fs_d] = audioread(d_filepath);
-    
+
     % Remove paddings, if present
     len_pad = length(d) - length(x);
-    if len_pad > 0,
+    if len_pad > 0
         start_pad = 528;
         end_pad = len_pad - start_pad;
         d = d(start_pad + 1:end - end_pad);
-    end;
+    end
 
     % Assertions
     assert(size(d, 2) == 1, 'The audio must be mono.');
     assert(Fs_x == Fs_d, 'The sampling rate of x and y does not match.');
     assert(length(d) == length(x), 'x and y does not have the same length.');
-    
-    
+
+
     % Estimate the signal
     d_hat = wienerCola(x, y, L, M);
-    
-    
+
+    % Fix gain, if necessary
+    % normalization_factor = median(d ./ d_hat);
+    % d_hat = d_hat .* normalization_factor;
+
     % Compute metrics
     SDR_xy = sdr(d, x);
     PAQM_score_xy = PAQM(d, x, Fs_d);
@@ -136,21 +139,20 @@ for i = 1:6,
     [Rnonlin_score_yyhat, ~, ~, ~] = Rnonlintest([d, d], [d_hat, d_hat], Fs_d);
     Rnonlin_score_yyhat = log10(Rnonlin_score_yyhat);
 
-
     % Print and append results to file
     results_str = strjoin({
         '\n-------------------------\n\n', ...
         sprintf('EXPERIMENT %d\n\n', i), ...
         sprintf('Reference signal (x) metrics:\n'), ...
         sprintf('SDR = %3.2f dB\n', SDR_xy), ...
-        sprintf('PAQM score = %3.2f\n', PAQM_score_xy), ...
+        sprintf('PAQM (MOS) score = %3.2f\n', PAQM_score_xy), ...
         sprintf('Rnonlin score (log) = %.3f\n\n', Rnonlin_score_xy), ...
         sprintf('Estimated signal (d_hat) metrics:\n'), ...
         sprintf('SDR = %3.2f dB\n', SDR_yyhat), ...
-        sprintf('PAQM score = %3.2f\n', PAQM_score_yyhat), ...
+        sprintf('PAQM (MOS) score = %3.2f\n', PAQM_score_yyhat), ...
         sprintf('Rnonlin score (log) = %.3f\n', Rnonlin_score_yyhat)
     }, '');
-    
+
     fprintf(results_str);
     fd = fopen('results.txt', 'a');
     fprintf(fd, results_str);
@@ -160,4 +162,4 @@ for i = 1:6,
     % Save audio estimation
     d_hat_filepath = strjoin({'./d_hat/d_hat_', num2str(i), '.wav'}, '');
     audiowrite(d_hat_filepath, d_hat, Fs_d);
-end;
+end
