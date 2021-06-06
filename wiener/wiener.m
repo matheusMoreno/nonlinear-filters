@@ -1,4 +1,4 @@
-function y_est = wiener(x, d, L)
+function d_est = wiener(x, d, L)
 %WIENER Linear Wiener estimation using correlation
 %   x: input signal to be filtered
 %   d: output signal, correlated with x
@@ -6,6 +6,8 @@ function y_est = wiener(x, d, L)
 
     assert(length(x) == length(d), 'The sizes of x and d must be the same.');
 
+    x = x(:);
+    d = d(:);
     N = length(d);
 
     % Calculating Rxx
@@ -18,14 +20,14 @@ function y_est = wiener(x, d, L)
     r_xd = r_xd(L:end);
 
     % Filter coefs
-    filter = Rxx \ r_xd;
-    filter_pad = [filter; zeros(N - L, 1)];
+    filter_coefs = Rxx \ r_xd;
+    filter_pad = [filter_coefs; zeros(N - L, 1)];
 
     % Filtering in the frequency domain
     x_fft = fft(x, N);
     filter_pad_fft = fft(filter_pad, N);
-    y_est_fft = x_fft .* filter_pad_fft;
+    d_est_fft = x_fft .* filter_pad_fft;
 
     % Going back to the time domain
-    y_est = ifft(y_est_fft);
+    d_est = ifft(d_est_fft);
 end

@@ -1,31 +1,34 @@
-function d_est = correntropyFilter(x, y, L, sigma)
+function d_est = correntropyFilter(x, d, L, sigma)
 %CORRENTROPYFILTER estimates a nonlinear filtering using a gaussian kernel
 %   x: input signal to be filtered
-%   y: output signal, correlated with x
+%   d: output signal, correlated with x
 %   L: size of filter
 %   sigma: parameter of the kernel function
 
-    assert(length(x) == length(y), 'x and y must have the same length.');
+    assert(length(x) == length(d), 'x and d must have the same length.');
 
     % Set constants
-    N = length(y);
+    N = length(d);
+
+    % Make sure x and d are column vectors
+    x = x(:);
+    d = d(:);
 
     % gaussianKernel() is the kernel matrix with every k(i, j)
     % pinv(correntropy()) is Vinv, the correntropy inverse
     corr = xcorr2(                                              ...
         gaussianKernel(                                         ...
-            repmat(flip([zeros(L - 1, 1); x]), 1, N + L - 1),   ...
-            repmat(flip([zeros(L - 1, 1); x]), 1, N + L - 1)',  ...
+            repmat(flip(x), 1, N), repmat(flip(x), 1, N)',      ...
             sigma, 'elemwise'                                   ...
         ),                                                      ...
-        pinv(correntropy(x, L, sigma))                          ...
+        pinv(correntropyMatrix(x, L, sigma))                    ...
     );
-    corr = corr(L:L + N - 1, L:L + N - 1);
+    corr = corr(L:end, L:end);
 
-    d_est = flip(corr * flip(y)) / N;
+    d_est = flip(corr * flip(d)) / N;
 
     % Correcting the scale by making the signals fit in the same range
-    scale = range(d_est) / range(y);
+    scale = std(d_est) / std(d);
     if scale ~= 0 && ~isnan(scale)
         d_est = d_est / scale;
     end
