@@ -17,6 +17,15 @@ function d_est = correntropyFilterRaw(x, d, L, sigma)
     % Define dhat (estimation) vector
     d_est = zeros(N, 1);
 
+    % Compute condition number of Vxx to warn for the possibility of bad results
+    condN = cond(correntropyMatrix(x, L, sigma));
+    if condN > 1e3
+        fprintf([
+            'WARNING: Condition number of correntropy matrix is considerably ' ...
+            'large (%.2f > 10^3). Estimation may be heavily distorted.\n'      ...
+        ], condN);
+    end
+
     % Compute inverse of correntropy matrix
     V = pinv(correntropyMatrix(x, L, sigma));
 
@@ -36,7 +45,7 @@ function d_est = correntropyFilterRaw(x, d, L, sigma)
         d_est(n + 1) = d_est(n + 1) / N;
     end
 
-    % Correcting the scale by making the signals fit in the same range
+    % Correcting the scale by making the signals have the same variance
     scale = std(d_est) / std(d);
     if scale ~= 0 && ~isnan(scale)
         d_est = d_est / scale;
