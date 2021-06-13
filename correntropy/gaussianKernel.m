@@ -5,6 +5,10 @@ function K = gaussianKernel(x, y, sigma, type)
 %   of (x - y) is used to return a scalar; if it's 'elemwise', the value
 %   is calculated element-wise
 
+    if (~exist('type', 'var'))
+        type = 'elemwise';
+    end
+
     diff = x - y;
 
     if strcmp(type, 'vector')
