@@ -1,0 +1,59 @@
+CORRENTROPY FILTER RESULTS (PROOF OF CONCEPT EXPERIMENTS)
+
+STANDARD DEVIATION OF SIGNALS
+Sinewave: 0.45277
+Faux audiowave A: 0.33640
+
+-------------------------
+
+EXPERIMENT 1
+Lw = 10; Lc = 10, sig = 0.0000000001
+Wiener NMSE: 0.48943125
+Wiener SDR: 3.10 dB
+Correntropy NMSE: 0.00007831
+Correntropy SDR: 41.06 dB
+
+-------------------------
+
+EXPERIMENT 2
+Lw = 10; Lc = 10, sig = 0.0000000001
+Wiener NMSE: 0.47474526
+Wiener SDR: 3.24 dB
+Correntropy NMSE: 0.00000003
+Correntropy SDR: 75.54 dB
+
+-------------------------
+
+EXPERIMENT 3
+Lw = 34; Lc = 1, sig = 0.9000000000
+Wiener NMSE: 0.00987730
+Wiener SDR: 20.05 dB
+Correntropy NMSE: 0.00043706
+Correntropy SDR: 33.59 dB
+
+-------------------------
+
+EXPERIMENT 4
+Lw = 34; Lc = 1, sig = 0.9000000000
+Wiener NMSE: 0.00969200
+Wiener SDR: 20.14 dB
+Correntropy NMSE: 0.00069381
+Correntropy SDR: 31.59 dB
+
+-------------------------
+
+EXPERIMENT 5
+Lw = 34; Lc = 1, sig = 0.9000000000
+Wiener NMSE: 0.01079939
+Wiener SDR: 19.67 dB
+Correntropy NMSE: 0.00328739
+Correntropy SDR: 24.83 dB
+
+-------------------------
+
+EXPERIMENT 6
+Lw = 34; Lc = 1, sig = 0.9000000000
+Wiener NMSE: 0.25036665
+Wiener SDR: 6.01 dB
+Correntropy NMSE: 0.11187647
+Correntropy SDR: 9.51 dB

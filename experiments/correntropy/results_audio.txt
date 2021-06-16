@@ -1,0 +1,93 @@
+CORRENTROPY FILTER RESULTS
+
+
+###############################
+
+
+Filter length: L = 1
+Window size: W = 8820
+Hop: H = 4410 (0.50 overlap)
+
+-------------------------
+
+EXPERIMENT 1
+
+Reference signal (x) metrics:
+SDR = -11.57 dB
+PAQM score = 1.1728
+Rnonlin score (log) = -0.0050
+
+Estimated signal (d_hat) metrics:
+SDR = 21.54 dB
+PAQM score = 1.1811
+Rnonlin score (log) = -0.0192
+
+-------------------------
+
+EXPERIMENT 2
+
+Reference signal (x) metrics:
+SDR = -11.57 dB
+PAQM score = 1.1728
+Rnonlin score (log) = -0.0050
+
+Estimated signal (d_hat) metrics:
+SDR = -8.92 dB
+PAQM score = 1.1734
+Rnonlin score (log) = -0.2816
+
+-------------------------
+
+EXPERIMENT 3
+
+Reference signal (x) metrics:
+SDR = 19.56 dB
+PAQM score = 1.2110
+Rnonlin score (log) = -0.0156
+
+Estimated signal (d_hat) metrics:
+SDR = 17.50 dB
+PAQM score = 1.1759
+Rnonlin score (log) = -0.0202
+
+-------------------------
+
+EXPERIMENT 4
+
+Reference signal (x) metrics:
+SDR = 19.56 dB
+PAQM score = 1.2110
+Rnonlin score (log) = -0.0156
+
+Estimated signal (d_hat) metrics:
+SDR = 4.40 dB
+PAQM score = 1.1738
+Rnonlin score (log) = -0.1547
+
+-------------------------
+
+EXPERIMENT 5
+
+Reference signal (x) metrics:
+SDR = -14.77 dB
+PAQM score = 1.1728
+Rnonlin score (log) = -0.0317
+
+Estimated signal (d_hat) metrics:
+SDR = 5.64 dB
+PAQM score = 1.1739
+Rnonlin score (log) = -0.3299
+
+-------------------------
+
+EXPERIMENT 6
+
+Reference signal (x) metrics:
+SDR = -14.77 dB
+PAQM score = 1.1728
+Rnonlin score (log) = -0.0317
+
+Estimated signal (d_hat) metrics:
+SDR = -9.08 dB
+PAQM score = 1.1731
+Rnonlin score (log) = -0.4219
