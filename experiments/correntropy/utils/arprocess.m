@@ -18,9 +18,9 @@ function signal = arprocess(N, Ts, duration)
     u = wgn(length(t), 1, 0);
     signal = lsim(sys, u, t);
 
-    % Normalize signal so that |s| <= 0.5
+    % Normalize signal so that |s| <= 1
     maxVal = max(abs(signal));
-    g = 0.5 / maxVal;
+    g = 1 / maxVal;
     signal = g .* signal;
     signal = signal(:);
 end
