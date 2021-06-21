@@ -69,9 +69,6 @@ noise = noise(:);
 fauxdeux = arprocess(80, Ts_ar, 0.2);
 fauxdeux = fauxdeux(:);
 
-% Plot signals
-plot(t_sine, sine)
-saveas(gcf, 'sine.png')
 
 std_str = strjoin({                                                    ...
     '\nSTANDARD DEVIATION OF SIGNALS\n',                               ...
@@ -87,7 +84,6 @@ dlmwrite(                                                                  ...
     strjoin({signals_dir, '/sine.csv'}, ''), [t_sine sine],                ...
     'delimiter', ' ', 'precision', 10                                      ...
 );
-pause
 
 
 %% Define experiments' vectors and parameters
@@ -153,13 +149,6 @@ for k = 1:6
 
     % Save signals for experiments with sinewaves
     if mod(k, 2) == 1
-        plot(t_sine, objective)
-        hold on
-        plot(t_sine, wiener_est)
-        plot(t_sine, corren_est)
-        saveas(gcf, 'sine.png')
-        hold off
-
         dlmwrite(                                                          ...
             sprintf('%s/experiment_%d.csv', signals_dir, k),               ...
             [t_sine objective wiener_est corren_est],                      ...

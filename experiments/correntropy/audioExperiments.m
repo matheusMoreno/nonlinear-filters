@@ -85,7 +85,7 @@ fd = fopen(results_filepath, 'a');
 fprintf(fd, parameters_str);
 fclose(fd);
 
-for i = 4:4
+for i = 1:6
     % Import observed signal
     y_filepath = strjoin({'./y/y_', num2str(i), '.wav'}, '');
     [y, Fs_y] = audioread(y_filepath);
