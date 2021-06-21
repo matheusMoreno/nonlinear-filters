@@ -10,12 +10,12 @@ EXPERIMENT 1
 
 Reference signal (x) metrics:
 SDR = -11.57 dB
-PAQM (MOS) score = 1.00
+PAQM (MOS) score = 1.17
 Rnonlin score (log) = -0.005
 
 Estimated signal (d_hat) metrics:
 SDR = 42.65 dB
-PAQM (MOS) score = 2.10
+PAQM (MOS) score = 2.04
 Rnonlin score (log) = -0.006
 
 -------------------------
@@ -24,12 +24,12 @@ EXPERIMENT 2
 
 Reference signal (x) metrics:
 SDR = -11.57 dB
-PAQM (MOS) score = 1.00
+PAQM (MOS) score = 1.17
 Rnonlin score (log) = -0.005
 
 Estimated signal (d_hat) metrics:
 SDR = 15.39 dB
-PAQM (MOS) score = 1.03
+PAQM (MOS) score = 1.20
 Rnonlin score (log) = -0.028
 
 -------------------------
@@ -38,12 +38,12 @@ EXPERIMENT 3
 
 Reference signal (x) metrics:
 SDR = 19.56 dB
-PAQM (MOS) score = 1.05
+PAQM (MOS) score = 1.21
 Rnonlin score (log) = -0.016
 
 Estimated signal (d_hat) metrics:
 SDR = 23.24 dB
-PAQM (MOS) score = 1.07
+PAQM (MOS) score = 1.22
 Rnonlin score (log) = -0.016
 
 -------------------------
@@ -52,12 +52,12 @@ EXPERIMENT 4
 
 Reference signal (x) metrics:
 SDR = 19.56 dB
-PAQM (MOS) score = 1.05
+PAQM (MOS) score = 1.21
 Rnonlin score (log) = -0.016
 
 Estimated signal (d_hat) metrics:
 SDR = 22.11 dB
-PAQM (MOS) score = 1.04
+PAQM (MOS) score = 1.20
 Rnonlin score (log) = -0.022
 
 -------------------------
@@ -66,12 +66,12 @@ EXPERIMENT 5
 
 Reference signal (x) metrics:
 SDR = -14.77 dB
-PAQM (MOS) score = 1.00
+PAQM (MOS) score = 1.17
 Rnonlin score (log) = -0.032
 
 Estimated signal (d_hat) metrics:
 SDR = 13.43 dB
-PAQM (MOS) score = 1.01
+PAQM (MOS) score = 1.18
 Rnonlin score (log) = -0.080
 
 -------------------------
@@ -80,10 +80,10 @@ EXPERIMENT 6
 
 Reference signal (x) metrics:
 SDR = -14.77 dB
-PAQM (MOS) score = 1.00
+PAQM (MOS) score = 1.17
 Rnonlin score (log) = -0.032
 
 Estimated signal (d_hat) metrics:
 SDR = 11.47 dB
-PAQM (MOS) score = 1.01
+PAQM (MOS) score = 1.18
 Rnonlin score (log) = -0.087
