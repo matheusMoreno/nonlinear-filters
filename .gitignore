@@ -2,9 +2,6 @@
 lordelo/
 mackeyglass/
 
-# Folders with code not ready for experiments
-unscented/
-
 # Code used, but not mine
 rnonlin/*
 paqm/*
