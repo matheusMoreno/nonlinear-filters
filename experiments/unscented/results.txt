@@ -1,0 +1,94 @@
+UNSCENTED KALMAN FILTER RESULTS
+
+History length: L = 3
+Max polynomial size: P = 3
+
+-------------------------
+
+EXPERIMENT 1
+Process variance: 0.01000; Observation variance: 0.00010
+
+Reference signal (x) metrics:
+SDR = -11.57 dB
+PAQM score = 1.1728
+Rnonlin score (log) = -0.0050
+
+Estimated signal (d_hat) metrics:
+SDR = 98.25 dB
+PAQM score = 4.6207
+Rnonlin score (log) = -0.0040
+
+-------------------------
+
+EXPERIMENT 2
+Process variance: 0.01000; Observation variance: 40000.00000
+
+Reference signal (x) metrics:
+SDR = -11.57 dB
+PAQM score = 1.1728
+Rnonlin score (log) = -0.0050
+
+Estimated signal (d_hat) metrics:
+SDR = 16.56 dB
+PAQM score = 1.1757
+Rnonlin score (log) = -0.0269
+
+-------------------------
+
+EXPERIMENT 3
+Process variance: 0.01000; Observation variance: 0.00010
+
+Reference signal (x) metrics:
+SDR = 19.56 dB
+PAQM score = 1.2110
+Rnonlin score (log) = -0.0156
+
+Estimated signal (d_hat) metrics:
+SDR = 99.04 dB
+PAQM score = 4.6215
+Rnonlin score (log) = -0.0033
+
+-------------------------
+
+EXPERIMENT 4
+Process variance: 0.01000; Observation variance: 10000.00000
+
+Reference signal (x) metrics:
+SDR = 19.56 dB
+PAQM score = 1.2110
+Rnonlin score (log) = -0.0156
+
+Estimated signal (d_hat) metrics:
+SDR = 27.27 dB
+PAQM score = 1.1826
+Rnonlin score (log) = -0.0157
+
+-------------------------
+
+EXPERIMENT 5
+Process variance: 0.01000; Observation variance: 0.00010
+
+Reference signal (x) metrics:
+SDR = -14.77 dB
+PAQM score = 1.1728
+Rnonlin score (log) = -0.0317
+
+Estimated signal (d_hat) metrics:
+SDR = 66.78 dB
+PAQM score = 4.5042
+Rnonlin score (log) = -0.0045
+
+-------------------------
+
+EXPERIMENT 6
+Process variance: 0.01000; Observation variance: 2000.00000
+
+Reference signal (x) metrics:
+SDR = -14.77 dB
+PAQM score = 1.1728
+Rnonlin score (log) = -0.0317
+
+Estimated signal (d_hat) metrics:
+SDR = 5.85 dB
+PAQM score = 1.1734
+Rnonlin score (log) = -0.1481
