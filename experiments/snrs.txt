@@ -1,0 +1,4 @@
+SNR OF NOISY SIGNALS
+
+Experiment 2: SNR = -9.17 dB
+Experiment 4: SNR = 3.97 dB
