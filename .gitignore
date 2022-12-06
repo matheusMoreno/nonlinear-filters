@@ -1,21 +1,16 @@
-# Folders with codes not used
-lordelo/
-mackeyglass/
-
-# Code used, but not mine
-rnonlin/*
-paqm/*
+# Code that is not mine
+src/rnonlin/*
+src/paqm/*
 
 # Some PAQM codes are mine
-!paqm/gen*
-!paqm/PAQMToMOSData.csv
+!src/paqm/gen*
+!src/paqm/PAQMToMOSData.csv
 
 # Media files
 *.wav
-*.eps
 *.png
 
-# Useless files created by MATLAB, Windows or Mac
+# Files created by MATLAB, Windows or Mac
 *.asv
 **.ini
 **.DS_Store
