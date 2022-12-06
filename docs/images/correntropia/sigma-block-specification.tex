@@ -1,0 +1,21 @@
+\begin{tikzpicture}[node distance=0.75cm and 1cm]
+    \node[dspfilter, minimum height=2cm, minimum width=9cm, text height=0.3cm] (sigma) {
+        \footnotesize
+        \begingroup
+        \setlength\arraycolsep{5pt}
+        $\begin{matrix}
+        \Tilde{v}_{00} \kappa(x[n], x[k]) & \cdots & \Tilde{v}_{0L-1} \kappa(x[n], x[k-L+1])\\
+        \vdots & \ddots & \vdots\\
+        \Tilde{v}_{L-10} \kappa(x[n-L+1], x[k]) & \cdots & \Tilde{v}_{L-1L-1} \kappa(x[n-L+1], x[k-L+1])
+        \end{matrix}$
+        \endgroup
+    };
+    
+    \node[dspnodeopen, dsp/label=above, left=of sigma] (x-n) {$\textbf{x}[n]$};
+    \node[dspnodeopen, dsp/label=left, above=of sigma] (x-i) {$\textbf{x}[k]$};
+    
+    \draw[dspconn] (x-n) -- (sigma);
+    \draw[dspconn] (x-i) -- (sigma);
+    \node[coordinate, right=of sigma, xshift=1cm, inner sep=0pt] (sum-cord) {};
+    \draw[dspconn] (sigma) -- node[midway,above] {$\sum_i \sum_j s_{ij}$} (sum-cord);
+\end{tikzpicture}

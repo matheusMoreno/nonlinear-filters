@@ -1,0 +1,107 @@
+\chapter{Modelagem da Curva de Conversão de PAQM para MOS}
+\label{appendix:paqmtomos}
+
+Como descrito na Seção~\ref{section:metrics:paqm}, a PAQM é definida como o logaritmo em base 10 da perturbação de ruído $\mathcal{L}_n$. Esta, por sua vez, é derivada a partir da diferença absoluta entre representações tempo-frequenciais de dois sinais, resultando sempre em um valor não-negativo. Consequentemente, o domínio da PAQM é todo o conjunto dos números reais, sem valores limitantes que definam o pior e/ou o melhor caso, como acontece com as outras medidas usadas neste projeto. Esta característica --- somada ao fato de que a medida psicoacústica não é tão difundida e consolidada a ponto de possuirmos notas ``de referência'' para analisarmos facilmente os resultados --- fez com que a conversão da nota para uma escala mais interpretável se tornasse um passo adicional oportuno.
+
+Para a validação do modelo projetado em~\cite{beerends-2002}, os autores utilizaram um banco de dados de testes subjetivos com notas em MOS: calculando as notas PAQM associadas a cada experimento, foi gerado um conjunto de pontos (PAQM, MOS) e, neste, aplicou-se uma regressão polinomial de terceira ordem, resultando em uma curva que efetivamente faz a conversão entre as duas escalas. Deste modo, é natural nos basearmos nesta curva para projetarmos a função de conversão $m(p)$\symbl{$m(p)$}{Função de conversão de PAQM para MOS}.
+
+A curva apresentada no artigo é monótona decrescente, e vai assintoticamente para os valores máximos da nota MOS, ou seja,
+\begin{equation}
+    \lim_{p \to -\infty} m(p) = 5,\ \lim_{p \to \infty} m(p) = 1.
+\end{equation}
+Note que é impossível que uma equação polinomial, sozinha, satisfaça todas essas condições. Por este motivo, para nossa primeira tentativa, evitamos utilizar um modelo polinomial. Em vez disso, foi considerada uma função sigmoide decrescente, que apresenta exatamente o comportamento desejado, e portanto se assemelha à curva objetivada.
+
+Na modelagem da função, nos dirigimos às recomendações da \textit{International Telecommunication Union} (ITU)\abbrev{ITU}{\textit{International Telecommunication Union}} para a conversão da nota PESQ para a nota MOS. A PESQ, de \textit{Perceptual Evaluation of Speech Quality}\abbrev{PESQ}{\textit{Perceptual Evaluation of Speech Quality}}, é também uma medida psicocústica, só que usada para avaliar especificamente a qualidade percebida de gravações vocais. Para o mapeamento da nota PESQ para a nota MOS, a ITU recomenda a seguinte função~\cite{biscainho-2015}:
+\begin{equation}
+    m_1(p) = 0.999 + \frac{4}{1 + e^{\alpha_1 + \alpha_2 p}},
+    \label{eq:paqmtomos:sigmoid2}
+\end{equation}
+na qual $\alpha_1$ e $\alpha_2$ devem ser otimizados de acordo com os dados disponíveis.
+
+Para realizar a otimização destes dois parâmetros, foram usados os 50 pontos (PAQM, MOS) presentes em~\cite{beerends-2002} associados a experimentos com alto-falantes. Infelizmente, os valores numéricos deste conjunto não são diretamente explicitados no texto; os pontos são apenas apresentados graficamente com a curva modelada. Então, tornou-se necessário executar um processo de engenharia reversa: aplicando linhas de grade no gráfico, valores aproximados dos pontos foram extraídos. Com estes dados estimados, aplicou-se a função \texttt{nlinfit()} do MATLAB para ajustar a curva. Os valores encontrados foram $\alpha_1 = 2.5524$ e $\alpha_2 = 2.4136$. Os pontos aproximados e a curva gerada são apresentados na Figura~\ref{fig:paqmtomos:sigmoid2}.
+
+\begin{figure}[!ht]
+    \centering
+    \input{images/appendices/paqmtomos-sigmoid2}
+    \caption[Sigmoide com dois parâmetros de conversão de PAQM para MOS]{Valores aproximados do primeiro conjunto de pontos apresentados em~\cite{beerends-2002}, e a curva $m_1(p)$ ajustada.}
+    \label{fig:paqmtomos:sigmoid2}
+\end{figure}
+
+Embora o desempenho da função tenha sido satisfatório na ``região de transição'', o comportamento assintótico deixou a desejar: no modelo do artigo, a curva é muito mais acentuada, demorando muito mais para chegar nos valores máximo e mínimo da nota MOS (principalmente no máximo). Por este motivo, é interessante tentarmos desenvolver uma curva mais fiel ao gráfico presente no artigo.
+
+A segunda tentativa consistiu em uma função definida por partes: na região de transição, temos um polinômio de ordem três, exatamente como usado na validação da PAQM. Porém, para reproduzir o comportamento assintótico, são introduzidas funções exponenciais que convergem para os valores requeridos; desse modo, conseguimos satisfazer todas as condições da curva de transição. Ou seja,
+\begin{equation}
+    m_2(p) = \begin{cases}
+        5 - \alpha_1 e^{\beta_1 p}, & p < p_1,\\
+        a p^3 + b p^2 + c p + d, & p_1 \leq p < p_2,\\
+        1 + \alpha_2 e^{-\beta_2 p}, & p_2 \leq p,
+    \end{cases}
+\end{equation}
+onde $a$, $b$, $c$ e $d$ são calculados por meio de uma regressão polinomial de terceira ordem, e $\alpha_1$, $\beta_1$, $\alpha_2$ e $\beta_2$ são números positivos definidos de acordo com os coeficientes polinomiais. Mais especificamente, se queremos manter a continuidade e diferenciabilidade da curva, podemos calcular os coeficientes exponenciais de modo que $m_2(p_1)$, $m_2'(p_1)$, $m_2(p_2)$ e $m_2'(p_2)$ sejam bem definidos.
+
+Suponha que a regressão tenha sido executada, e, consequentemente, os valores de $a$, $b$, $c$ e $d$ sejam conhecidos. Assim, temos que, para um $p$ qualquer, o valor do polinômio ajustado e de sua derivada são, respectivamente,
+\begin{align}
+    l(p) &= a p^3 + b p^2 + c p + d;\\
+    l'(p) &= 3a p^2 + 2 b p + c.
+\end{align}
+
+Em $p_1$, para que tanto $m_2(p_1)$ e $m_2'(p_1)$ sejam bem definidos, queremos que ambos estes valores existam. Assim, podemos montar o seguinte sistema:
+\begin{align}
+    &m_2(p_1) = l(p_1) = 5 - \alpha_1 e^{\beta_1 p_1},\label{eq:paqmtomos:m2p1}\\
+    &m_2'(p_1) = l'(p_1) = -\beta_1 \alpha_1 e^{\beta_1 p_1}.\label{eq:paqmtomos:m2p1diff}
+\end{align}
+Com as devidas manipulações algébricas, podemos reescrever a Equação~(\ref{eq:paqmtomos:m2p1}):
+\begin{equation}
+    5 - l(p_1) = \alpha_1 e^{\beta_1 p_1} \implies \ln(5 - l(p_1)) = \ln(\alpha_1) + \beta_1 p_1.\label{eq:paqmtomos:A8}
+\end{equation}
+De modo similar, para a Equação~(\ref{eq:paqmtomos:m2p1diff}) encontramos que
+\begin{equation}
+    |l'(p_1)| = \beta_1 \alpha_1 e^{\beta_1 p_1} \implies \ln(|l'(p_1)|) = \ln(\beta_1) + \ln(\alpha_1) + \beta_1 p_1.\label{eq:paqmtomos:A9}
+\end{equation}
+Subtraindo a Equação~(\ref{eq:paqmtomos:A8}) da Equação~(\ref{eq:paqmtomos:A9}), temos:
+\begin{equation}
+    \ln(|l'(p_1)|) - \ln(5 - l(p_1)) = \ln(\beta_1) \implies \beta_1 = \frac{|l'(p_1)|}{5 - l(p_1)}.
+\end{equation}
+Com $\beta_1$ calculado, calcular $\alpha_1$ torna-se trivial. Pela Equação~(\ref{eq:paqmtomos:m2p1}),
+\begin{equation}
+    \alpha_1 = \frac{5 - l(p_1)}{e^{\beta_1 p_1}}.
+\end{equation}
+
+Podemos seguir exatamente a mesma linha de raciocínio para calcularmos $\alpha_2$ e $\beta_2$. Assim, encontraremos que
+\begin{equation}
+    \beta_2 = \frac{|l'(p_2)|}{l(p_2) - 1},\ \alpha_2 = \frac{l(p_2) - 1}{e^{-\beta_2 p_2}}.
+\end{equation}
+
+Aplicando a regressão polinomial no conjunto de 50 pontos, encontraram-se os valores $a = 0.4289$, $b = 1.2861$, $c = -0.8533$ e $d = 1.1820$. Depois de alguns testes, foi estipulado o uso dos valores $p_1 = -2.28$ e $p_2 = 0.28$, os quais resultaram na curva de maior semelhança à presente em~\cite{beerends-2002}. Com isso, os parâmetros resultantes para as funções exponenciais foram $\beta_1 = 0.1095$, $\alpha_1 = 0.3465$, $\beta_2 = 0.6052$ e $\alpha_2 = 0.0631$.
+
+\begin{figure}[!ht]
+    \centering
+    \input{images/appendices/paqmtomos-piecewise}
+    \caption[Curva definida por partes de conversão de PAQM para MOS]{Função definida por partes $m_2(p)$, e o conjunto de pontos usados para sua concepção.}
+    \label{fig:paqmtomos:piecewise}
+\end{figure}
+
+À primeira vista, o comportamento assintótico aparenta ser a principal diferença entre as curvas. Todavia, ao calcularmos algumas estatísticas, encontramos uma situação mais complexa. Por exemplo: o erro absoluto médio entre as notas MOS reais e as estimadas por $m_1(p)$ é $\epsilon_1 = 0.2394$, ao passo que para $m_2(p)$ este valor é $\epsilon_2 = 0.2354$. Por outro lado, os erros quadráticos médios são $\xi_1 = 0.1082$ e $\xi_2 = 0.1119$; similarmente, os desvios padrão são $\sigma_1 = 0.3310$ e $\sigma_2 = 0.3379$. Resultados conflituosos nos levam à seguinte questão: será que é possível desenvolver um modelo que supere ambas as curvas nessas medidas?
+
+Como duas das três estatísticas calculadas dão vantagem à função sigmoide, podemos dar mais uma chance ao modelo. Idealmente, com mais parâmetros, teremos um ajuste melhor. Assim, a terceira função proposta foi:
+\begin{equation}
+    m_3(p) = 0.999 + \frac{4}{1 + e^{\alpha_1 + \alpha_2 p + \alpha_3 p^2}}.
+\end{equation}
+
+Os valores computados pelo ajuste não-linear foram $\alpha_1 = 3.0495$, $\alpha_2 = 3.4806$ e $\alpha_3 = 0.4769$. As estatísticas resultantes foram $\epsilon_3 = 0.2196$, $\xi_3 = 0.1032$, e $\sigma_3 = 0.3243$. Como podemos ver, este modelo apresentou os melhores valores dentre os três; assim, esta foi a curva de conversão utilizada durante o projeto.
+
+\begin{figure}[!ht]
+    \centering
+    \input{images/appendices/paqmtomos-sigmoid3}
+    \caption[Sigmoide de três parâmetros de conversão de PAQM para MOS]{Função sigmoide de três parâmetros $m_3(p)$ usada no projeto, e o conjunto de pontos usados para sua concepção.}
+    \label{fig:paqmtomos:sigmoid3}
+\end{figure}
+
+Abaixo, na Figura~\ref{fig:paqmtomos:all}, encontram-se as três curvas modeladas apresentadas em conjunto, além dos pontos usados na modelagem.
+
+\begin{figure}[!ht]
+    \centering
+    \input{images/appendices/paqmtomos-all}
+    \caption[Todas as curvas de conversão de PAQM para MOS]{Gráfico com as três curvas $m_1(p)$, $m_2(p)$, e $m_3(p)$ modeladas neste apêndice, e o conjunto de pontos usados para suas concepções.}
+    \label{fig:paqmtomos:all}
+\end{figure}

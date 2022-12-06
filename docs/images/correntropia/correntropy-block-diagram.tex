@@ -1,0 +1,56 @@
+\begin{tikzpicture}[node distance=0.75cm and 2cm]
+    % x[0] row
+    \node[dspnodeopen, dsp/label=above] (x-0) {$\textbf{x}[0]$};
+    \node[dspfilter, below=of x-0, yshift=0.25cm] (block-0) {$S$};
+    \draw[dspconn] (x-0) -- (block-0);
+    
+    \node[dspmixer, right=of block-0] (prod-0) {};
+    \node[dspnodeopen, dsp/label=above, above=of prod-0] (d-0) {$d[0]$};
+    \draw[dspconn] (d-0) -- (prod-0);
+    \draw[dspconn] (block-0) -- (prod-0);
+
+    % x[1] row
+    \node[dspnodeopen, dsp/label=above, below=of block-0, yshift=-0.25cm] (x-1) {$\textbf{x}[1]$};
+    \node[dspfilter, below=of x-1, yshift=0.25cm] (block-1) {$S$};
+    \draw[dspconn] (x-1) -- (block-1);
+    
+    \node[dspmixer, right=of block-1] (prod-1) {};
+    \node[dspnodeopen, dsp/label=above, above=of prod-1] (d-1) {$d[1]$};
+    \draw[dspconn] (d-1) -- (prod-1);
+    \draw[dspconn] (block-1) -- (prod-1);
+    
+    \node[below=of block-1, yshift=0.75cm] (vdots-blocks) {$\vdots$};
+    \node[below=of prod-1, yshift=0.47cm] (vdots-prods) {$\vdots$};
+    
+    % x[N-1] row
+    \node[dspnodeopen, dsp/label=above, below=of vdots-blocks, yshift=0cm] (x-N) {$\textbf{x}[N-1]$};
+    \node[dspfilter, below=of x-N, yshift=0.25cm] (block-N) {$S$};
+    \draw[dspconn] (x-N) -- (block-N);
+
+    \node[dspmixer, right=of block-N] (prod-N) {};
+    \node[dspnodeopen, dsp/label=above, above=of prod-N] (d-N) {$d[N-1]$};
+    \draw[dspconn] (d-N) -- (prod-N);
+    \draw[dspconn] (block-N) -- (prod-N);
+
+    % Connections and other stuff
+    \node[dspadder, right=of prod-1] (adder) {};
+    \node[dspmixer, right=of adder, xshift=-1cm] (div) {};
+    
+    \node[dspnodeopen, dsp/label=left, left=of block-1] (x-n) {$\textbf{x}[n]$};
+    \node[coordinate, left=of block-0, xshift=2cm] (xcord-0) {};
+    \node[coordinate, left=of block-N, xshift=2cm] (xcord-N) {};
+    \draw[dspconn] (x-n) -- (xcord-0);
+    \draw[dspconn] (x-n) -- (block-1);
+    \draw[dspconn] (x-n) -- (xcord-N);
+
+    \draw[dspconn] (prod-0) -- (adder);
+    \draw[dspconn] (prod-1) -- (adder);
+    \draw[dspconn] (prod-N) -- (adder);
+    
+    \draw[dspconn] (adder) -- (div);
+    \node[dspnodeopen, dsp/label=left, above=of div, yshift=-0.25cm] (div-N) {};
+    \node[yshift=-0.75cm, above=of div-N] (div-N-label) {$\displaystyle\frac{1}{N}$};
+    \node[dspnodeopen, dsp/label=above, right=of div, xshift=-1cm] (y-n) {$\hat{d}[n]$};
+    \draw[dspconn] (div) -- (y-n);
+    \draw[dspconn] (div-N) -- (div);
+\end{tikzpicture}

@@ -1,0 +1,142 @@
+\tikzset{
+    compression-func/.pic={
+        \begin{scope}[shift={(-0.9, -0.5)}]
+            \draw[-latex] (-0.1, 0) -- (1.75, 0) node[above] {\scriptsize$E$};
+            \draw[-latex] (0, -0.1) -- (0, 1) node[right] {\scriptsize$\mathcal{L}$};
+            \draw[thick] (0.25, 0) to[out=80, in=-170] (1.65, 0.9);
+        \end{scope}
+    },
+    freqspread-func/.pic={
+        \begin{scope}[shift={(-0.9, -0.5)}]
+            \draw (0, 0) -- (1.8, 0);
+            \filldraw[dashed, thick, gray, fill opacity=0.2] (0.45, 0) -- (0.6, 0.9) -- (1.4, 0);
+        \end{scope}
+    },
+    linearfilter/.pic={
+        \begin{scope}[shift={(-0.9, -0.5)}]
+            \draw[-latex] (-0.1, 0) -- (1.75, 0) node[above] {\scriptsize$z$};
+            \draw[-latex] (0, -0.1) -- (0, 1) node[right] {\scriptsize$a_0$};
+            \draw[thick] (0, 0) to[out=60, in=180] (0.5, 0.6) -- (0.8, 0.55) to[out=0, in=180] (1.1, 0.7) to[out=0] (1.5, 0);
+        \end{scope}
+    },
+    freqconversion-func/.pic={
+        \begin{scope}[shift={(-0.9, -0.5)}]
+            \draw[-latex] (-0.1, 0) -- (1.75, 0) node[above] {\scriptsize$k$};
+            \draw[-latex] (0, -0.1) -- (0, 1) node[right] {\scriptsize$z$};
+            \draw[thick] (0, 0) to[out=60, in=-170] (1.6, 1);
+        \end{scope}
+    },
+    window/.pic={
+        \draw[thick] (-0.9, -0.375) sin (0, 0.375);
+        \draw[thick] (0, 0.375) cos (0.9, -0.375);
+    }
+}
+
+\begin{tikzpicture}[node distance=0.9cm and 2.5cm]
+    % Drawing from bottom to top for easier organization
+    \node[coordinate] (paqm) {};
+
+    \node[dspfilter, above=of paqm, minimum height=1cm] (log10) {$\log_{10}(\cdot)$};
+    \draw[dspconn] (log10) -- node[midway,left] {PAQM} (paqm);
+
+    \node[dspfilter, left=of log10, minimum height=1cm, xshift=0.75cm] (time-freq-mean) {$\frac{1}{N}\sum_m\sum_z$};
+    \draw[dspconn] (time-freq-mean) -- node[midway,above] {$\mathcal{L}_n$} (log10);
+    
+    %\node[below=of paqm, yshift=0.5cm] (whitespace) {};
+
+    \node[dspfilter, left=of time-freq-mean, minimum height=1cm, xshift=0.75cm] (abs) {$|\cdot|$};
+    \draw[dspconn] (abs) -- node[midway,above] {$\mathcal{L}_n[m, z]$} (time-freq-mean);
+
+    \node[dspadder, above=of abs, yshift=-0.25cm] (diff) {};
+    \draw[dspconn] (diff) -- (abs);
+
+    %%%%%%%%%%% DHAT
+    \node[dspfilter, above right=of diff, minimum height=1cm, yshift=-0.65cm] (scaling) {Ganho};
+    \draw[dspconn] (scaling) |- node[midway,right] {$\mathcal{L}'_{\hat{d}}[m, z]$} (diff);
+    \node[xshift=0.65cm, yshift=0.3cm] (plus) at (diff) {$+$};
+
+    \node[dspfilter, minimum height=1.5cm, above=of scaling] (compression-dhat) {};
+    \pic[] at (compression-dhat) {compression-func};
+    \draw[dspconn] (compression-dhat) -- node[midway,right] {$\mathcal{L}_{\hat{d}}[m, z]$} (scaling);
+
+    \node[dspfilter, minimum height=1.5cm, above=of compression-dhat] (freqspread-dhat) {};
+    \pic[] at (freqspread-dhat) {freqspread-func};
+    \draw[dspconn] (freqspread-dhat) -- node[midway,right] {$E_{\hat{d}}[m, z]$} (compression-dhat);
+
+    \node[dspfilter, above=of freqspread-dhat, minimum height=1cm] (timespread-dhat) {$+$, $e^{h(m, z)}$};
+    \draw[dspconn] (timespread-dhat) -- (freqspread-dhat);
+
+    \node[dspfilter, minimum height=1.5cm, above=of timespread-dhat] (linearfilter-dhat) {};
+    \pic[] at (linearfilter-dhat) {linearfilter};
+    \draw[dspconn] (linearfilter-dhat) -- node[midway,right] {$p_{\hat{d}}[m, z]$} (timespread-dhat);
+    
+    \node[dspfilter, minimum height=1.5cm, above=of linearfilter-dhat] (freqconversion-dhat) {};
+    \pic[] at (freqconversion-dhat) {freqconversion-func};
+    \draw[dspconn] (freqconversion-dhat) -- node[midway,right] {$P_{\hat{d}}[m, z]$} (linearfilter-dhat);
+
+    \node[dspfilter, above=of freqconversion-dhat, minimum height=1cm] (density-dhat) {$|\cdot|^2$};
+    \draw[dspconn] (density-dhat) -- node[midway,right] {$P_{\hat{d}}[m, k]$} (freqconversion-dhat);
+
+    \node[dspfilter, above=of density-dhat, minimum height=1cm] (fft-dhat) {FFT};
+    \draw[dspconn] (fft-dhat) -- (density-dhat);
+
+    \node[dspfilter, minimum height=1.25cm, above=of fft-dhat] (window-dhat) {};
+    \pic[] at (window-dhat) {window};
+    \draw[dspconn] (window-dhat) -- (fft-dhat);
+
+    \node[dspnodeopen, dsp/label=above, above=of window-dhat, yshift=-0.25cm] (dhat) {$\hat{d}[n]$};
+    \draw[dspconn] (dhat) -- (window-dhat);
+
+    %%%%%%%%%%% D
+    \node[dspfilter, minimum height=1.5cm, left=of compression-dhat, xshift=-3cm] (compression-d) {};
+    \pic[] at (compression-d) {compression-func};
+    \draw[dspconn] (compression-d) |- node[midway,left] {$\mathcal{L}_d[m, z]$} (diff);
+    \node[xshift=-0.65cm, yshift=0.3cm] (minus) at (diff) {$-$};
+
+    \node[dspfilter, minimum height=1.5cm, above=of compression-d] (freqspread-d) {};
+    \pic[] at (freqspread-d) {freqspread-func};
+    \draw[dspconn] (freqspread-d) -- node[midway,left] {$E_d[m, z]$} (compression-d);
+
+    \node[dspfilter, above=of freqspread-d, minimum height=1cm] (timespread-d) {$+$, $e^{h(m, z)}$};
+    \draw[dspconn] (timespread-d) -- (freqspread-d);
+
+    \node[dspfilter, minimum height=1.5cm, above=of timespread-d] (linearfilter-d) {};
+    \pic[] at (linearfilter-d) {linearfilter};
+    \draw[dspconn] (linearfilter-d) -- node[midway,left] {$p_d[m, z]$} (timespread-d);
+    
+    \node[dspfilter, minimum height=1.5cm, above=of linearfilter-d] (freqconversion-d) {};
+    \pic[] at (freqconversion-d) {freqconversion-func};
+    \draw[dspconn] (freqconversion-d) -- node[midway,left] {$P_d[m, z]$} (linearfilter-d);
+
+    \node[dspfilter, above=of freqconversion-d, minimum height=1cm] (density-d) {$|\cdot|^2$};
+    \draw[dspconn] (density-d) -- node[midway,left] {$P_d[m, k]$} (freqconversion-d);
+
+    \node[dspfilter, above=of density-d, minimum height=1cm] (fft-d) {FFT};
+    \draw[dspconn] (fft-d) -- (density-d);
+
+    \node[dspfilter, minimum height=1.25cm, above=of fft-d] (window-d) {};
+    \pic[] at (window-d) {window};
+    \draw[dspconn] (window-d) -- (fft-d);
+
+    \node[dspnodeopen,dsp/label=above, above=of window-d, yshift=-0.25cm] (d) {$d[n]$};
+    \draw[dspconn] (d) -- (window-d);
+
+	%%%%%%%%%%%% MIDDLE PART
+	\node[dspfilter, above=of diff, yshift=0.2cm, minimum height=1cm] (compare) {Comparar};
+	\node[dspnodefull, left=of compare, xshift=-0.2cm] (comparison-node-d) {};
+	\node[dspnodefull, right=of compare, xshift=0.19cm] (comparison-node-dhat) {};
+	\draw[dspconn] (comparison-node-d) -- (compare);
+	\draw[dspconn] (comparison-node-dhat) -- (compare);
+	\draw[dspconn] (compare) |- (scaling);
+	
+    %%%%%%%%%%%% Some labels
+    \path (fft-d) -- (fft-dhat) node[midway, align=center] (fft-label) {1. Cálculo do\\Espectrograma};
+    \path (freqconversion-d) -- (freqconversion-dhat) node[midway, align=center] (freqconversion-label) {2a. Conversão de\\Hertz para Bark};
+    \path (linearfilter-d) -- (linearfilter-dhat) node[midway, align=center] (linearfilter-label) {2b. Filtro linear};
+    \path (timespread-d) -- (timespread-dhat) node[midway, align=center] (timespread-label) {3. Espalhamento\\temporal};
+    \path (freqspread-d) -- (freqspread-dhat) node[midway, align=center] (freqspread-label) {4. Espalhamento\\frequencial};
+    \path (compression-d) -- (compression-dhat) node[midway, align=center] (compression-label) {5. Compressão};
+    \node[right=of scaling, xshift=-1.5cm, align=center] (scaling-label) {6. Correção de\\ganho};
+    \node[left=of abs, xshift=2cm, align=center] (abs-label) {7. Perturbação\\de ruído};
+
+\end{tikzpicture}

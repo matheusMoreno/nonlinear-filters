@@ -1,0 +1,27 @@
+\begin{tikzpicture}[node distance=1.25cm and 1cm]
+    \draw[dspconn] (-2, -2) -- (2, 1.5);
+
+    % Filters
+    \node[dspfilter, minimum width=4cm, minimum height=1.5cm, fill=white] (corr) {$\frac{1}{M} (\textbf{V}_{x_i x_i}^{-1} * \mathbf{K}_{x_i x_i}) \mathbf{y}_i$};
+    \node[dspfilter, minimum width=4cm, minimum height=1.5cm, below=of corr, yshift=0.5cm, fill=white] (algorithm) {Variador de $\sigma$};
+
+    % nodes
+    \node[dspnodeopen, dsp/label=left, above=of corr] (x) {$x_i[n]$};
+    \node[dspnodefull, dsp/label=above, left=of corr] (mid-d) {};
+    \node[dspnodeopen, dsp/label=above, left=of mid-d] (d) {$y_i[n]$};
+    \node[dspnodefull, right=of corr, dsp/label=above] (mid-corr) {$\hat{d}_i[n]$};
+
+    % Window
+    \node[dspfilter, minimum width=2.5cm, minimum height=1.25cm, right=of mid-corr] (win) {};
+    \pic at (win) {window};
+
+    \draw[dspconn] (x) -- (corr);
+    \draw[dspconn] (d) -- (corr);
+    \draw[dspconn] (corr) -- (win);
+    \draw[dspconn] (mid-corr) |- (algorithm);
+    \draw[dspconn] (mid-d) |- (algorithm);
+    
+	\node[dspnodeopen, dsp/label=left, below right=of win, yshift=0.75cm, xshift=0.25cm] (ola-pic) {$\hat{d}[n]$};
+	\draw[dspconn] (win) -| node[midway,below, xshift=0.3cm, yshift=-0.25cm] {$+$} (ola-pic);
+    \pic[xshift=-2cm, yshift=-1.5cm] at (ola-pic) {ola};
+\end{tikzpicture}

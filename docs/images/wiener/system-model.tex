@@ -1,0 +1,13 @@
+\begin{tikzpicture}[node distance=2cm]
+	\node[dspnodeopen,dsp/label=above] (x) {$x[n]$};
+	\node[dspfilter, right=of x] (W) {$W(z)$};
+	\node[dspadder, right=of W] (sub) {};
+	\node[xshift=-0.5cm, yshift=0.25cm] (minus) at (sub) {$-$};
+	\node[xshift=-0.25cm, yshift=0.5cm] (plus) at (sub) {$+$};
+	\node[dspnodeopen,dsp/label=left, above=of sub, yshift=-0.5cm] (d) {$d[n]$};
+	\node[dspnodeopen,dsp/label=above, right=of sub] (e) {$e[n]$};
+	\draw[dspconn] (x) -- (W);
+	\draw[dspconn] (d) -- (sub);
+	\draw[dspconn] (sub) -- (e);
+	\draw[dspconn] (W) -- node[midway,above] {$\hat{d}[n]$} (sub);
+\end{tikzpicture}

@@ -1,0 +1,24 @@
+\begin{tikzpicture}[node distance=1.25cm and 1.25cm]
+    \node[dspnodeopen, dsp/label=left] (x) {$x[n]$};
+    \node[dspnodefull, right=of x] (x-split) {};
+
+    \node[dspfilter, right=of x-split] (w) {Estimador};
+    \node[dspfilter, above=of w] (f) {$f(x, r)$};
+    \node[dspfilter, below=of w, dashed] (f-zero) {$f(x, 0)$};
+
+    \node[dspnodeopen, dsp/label=left, above=of f, yshift=-0.5cm] (r) {$r[n]$};
+
+    \draw[dspline] (x) -- (x-split);
+    \draw[dspconn] (x-split) -- (w);
+    \draw[dspconn] (x-split) |- (f-zero);
+    \draw[dspconn] (x-split) |- (f);
+    \draw[dspconn] (r) -- (f);
+
+    \draw[dspconn] (f) -- node[midway,right] {$y[n]$} (w);
+    
+    \node[dspnodeopen, dsp/label=right, right=of f-zero] (d) {$d[n]$};
+    \node[dspnodeopen, dsp/label=right, right=of w] (dhat) {$\hat{d}[n]$};
+    
+    \draw[dspconn] (w) -- (dhat);
+    \draw[dspconn] (f-zero) -- (d);
+\end{tikzpicture}

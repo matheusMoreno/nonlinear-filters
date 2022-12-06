@@ -1,0 +1,41 @@
+\begin{tikzpicture}
+    \begin{axis}[
+        xlabel={PAQM},
+        ylabel={MOS},
+        xmin=-3, xmax=1,
+        ymin=1, ymax=5,
+        xtick={-2.5,-2,-1.5,-1,-0.5,0,0.5},
+        ytick={1,1.5,2,2.5,3,3.5,4,4.5,5},
+        grid=major,
+        width=13cm
+    ]
+    
+        \addplot+[
+            only marks,
+            mark=o,
+            color=black,
+            mark size=3pt
+        ] plot table {data/paqmtomos.dat};
+
+        \addplot [
+            domain=-3:-2.28, 
+            samples=50,
+            color=black,
+            very thick
+        ] {5 - 0.3465 * exp(0.1095 * x)};
+
+        \addplot [
+            domain=-2.28:0.28, 
+            samples=100,
+            color=black,
+            very thick
+        ] {0.4289 * x^3 + 1.2861 * x^2 - 0.8533 * x + 1.1820};
+
+        \addplot [
+            domain=0.28:1,
+            samples=50,
+            color=black,
+            very thick
+        ] {1 + 0.0631 * exp(-0.6052 * x)};
+    \end{axis}
+\end{tikzpicture}

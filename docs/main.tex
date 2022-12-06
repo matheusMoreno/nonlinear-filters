@@ -1,0 +1,127 @@
+% !Mode:: "TeX:UTF-8"
+
+\documentclass[tcc,numbers]{coppe}
+
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage[hidelinks]{hyperref}
+
+% Prettier tables
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\captionsetup[table]{skip=2.5pt}
+\captionsetup[subfigure]{skip=10pt}
+
+% Drawings library
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usetikzlibrary{dsp, chains}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+\pgfdeclareplotmark{*}{\fill[color=lightgray] (0,0) circle (0.5*\pgfplotmarksize);}
+
+% If-then-else. Logic!
+\usepackage{ifthen}
+
+% No need for inputec on LuaLaTeX, just the !Mode above
+\usepackage[T1]{fontenc}
+
+% Better line breaks on urls
+\makeatletter
+\g@addto@macro{\UrlBreaks}{\UrlOrds}
+\makeatother
+
+% Images path
+\graphicspath{{./images/}}
+
+% Make sybols and abbrv pages
+\makelosymbols
+\makeloabbreviations
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator{\sen}{sen}
+
+\newcommand{\rnonlin}{$R_{\text{nonlin}}$}
+
+% Useful drawing macros
+\tikzset{
+  window/.pic={
+    \draw[thick] (-1, -0.375) sin (0, 0.375);
+    \draw[thick] (0, 0.375) cos (1, -0.375);
+  },
+  ola/.pic={
+    \draw[|-|] (2, 1) -- node[midway,above] {$H$} (3, 1);
+    \foreach \i in {0,1,2} {
+        \ifthenelse{\i = 2}{
+            \draw[thick] (\i, 0) sin (\i + 1, 0.75);
+            \draw[thick] (\i + 1, 0.75) cos (\i + 2, 0);
+        }{
+            \draw[dashed] (\i, 0) sin (\i + 1, 0.75);
+            \draw[dashed] (\i + 1, 0.75) cos (\i + 2, 0);
+        }
+    }
+  }
+}
+
+
+\begin{document}
+    % Prettier matrices
+    %\renewcommand{\arraystretch}{}
+    \setlength{\arraycolsep}{7.5pt}
+
+    \title{Análise Comparativa de Métodos de Identificação de Sistemas Não-Lineares Aplicados a Sinais de Áudio}
+    \foreigntitle{Comparative Analysis of Nonlinear System Identification Methods Applied to Audio Signals}
+    \author{Matheus Fernandes}{Moreno}
+    \advisor{Prof.}{Luiz Wagner Pereira}{Biscainho}{D.Sc.}
+    
+    \examiner{Prof.}{Luiz Wagner Pereira Biscainho, D.Sc.}{D.Sc.}
+    \examiner{Prof.}{Marcello Luiz Rodrigues de Campos, Ph.D.}{Ph.D.}
+    \examiner{Prof.}{Carlos Pedro Vianna Lordelo, M.Sc.}{M.Sc.}
+    \department{DEL}
+    \date{07}{2021}
+
+    \keyword{Processamento de sinais de áudio}
+    \keyword{Separação de fontes sonoras}
+    \keyword{Distorção não-linear}
+    \keyword{Ruído aditivo}
+    \keyword{Filtro de Wiener}
+    \keyword{Filtro de Kalman}
+    \keyword{Correntropia}
+
+    \maketitle
+    
+    \frontmatter
+    \makecatalog
+
+    \input{preamble/declaracao}
+    \input{preamble/copyright}
+    \dedication{A todos que acreditam que um mundo mais justo é possível.}
+    \input{preamble/agradecimentos}
+    \input{preamble/resumo}
+    \input{preamble/abstract}
+    
+    \tableofcontents
+    \listoffigures
+    \listoftables
+    \printloabbreviations
+    \printlosymbols
+    
+    \mainmatter
+    \input{chapters/01-introducao}
+    \input{chapters/02-metricas}
+    \input{chapters/03-wiener}
+    \input{chapters/04-correntropia}
+    \input{chapters/05-unscented}
+    \input{chapters/06-conclusoes}
+
+    \backmatter
+    \bibliographystyle{coppe-unsrt}
+    \bibliography{bibliografia}
+    
+    \appendix
+    \input{appendices/A-paqmtomos}
+\end{document}
