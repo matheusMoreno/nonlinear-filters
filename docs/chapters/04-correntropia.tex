@@ -1,297 +1,476 @@
 \chapter{Filtro de Correntropia}
 \label{chapter:correntropyfilter}
 
-Agora que sabemos das capacidades e limitações --- dentro do contexto do projeto --- de um método de identificação linear consolidado, podemos partir para técnicas inovadoras desenvolvidas especificamente para sistemas não-lineares. A primeira a ser abordada é o Filtro de Correntropia~\cite{pokharel-2006, pokharel-2007}. Baseado em modelos que utilizam funções núcleo (\textit{kernel functions}), o filtro se propõe a atacar o \textit{trade-off} entre complexidade e robustez por meio de uma função denominada de correntropia~\cite{santamaria-2006}. O método é também chamado de Filtro de Wiener Não-linear, pois o Filtro de Wiener FIR discreto é usado em seu desenvolvimento, como será visto em breve.
+Agora que sabemos das capacidades e limitações --- dentro do contexto do projeto --- de
+um método de identificação linear consolidado, podemos partir para técnicas inovadoras
+desenvolvidas especificamente para sistemas não-lineares. A primeira a ser abordada é o
+Filtro de Correntropia~\cite{pokharel-2006, pokharel-2007}. Baseado em modelos que
+utilizam funções núcleo (\textit{kernel functions}), o filtro se propõe a atacar o
+\textit{trade-off} entre complexidade e robustez por meio de uma função denominada de
+correntropia~\cite{santamaria-2006}. O método é também chamado de Filtro de Wiener
+Não-linear, pois o Filtro de Wiener FIR discreto é usado em seu desenvolvimento, como
+será visto em breve.
 
-Começaremos o capítulo revisando o conceito de funções núcleo, para que em seguida seja possível introduzir a função de correntropia. Então, o Filtro de Correntropia será formalmente deduzido. Além disso, será apresentada também uma forma matricial da solução, a qual foi desenvolvida durante o projeto; com ela, pôde-se implementar o algoritmo de forma vetorizada, reduzindo drasticamente seu tempo de execução. Em seguida, uma análise preliminar acerca do filtro será conduzida. Por fim, o modelo específico utilizado no trabalho será discutido, seguido pelos experimentos executados e seus respectivos resultados.
+Começaremos o capítulo revisando o conceito de funções núcleo, para que em seguida seja
+possível introduzir a função de correntropia. Então, o Filtro de Correntropia será
+formalmente deduzido. Além disso, será apresentada também uma forma matricial da
+solução, a qual foi desenvolvida durante o projeto; com ela, pôde-se implementar o
+algoritmo de forma vetorizada, reduzindo drasticamente seu tempo de execução. Em
+seguida, uma análise preliminar acerca do filtro será conduzida. Por fim, o modelo
+específico utilizado no trabalho será discutido, seguido pelos experimentos executados
+e seus respectivos resultados.
 
 \section{Funções núcleo}
 
-Antes de definirmos o que é a correntropia em si, devemos considerar o tópico mais amplo de funções núcleo. Popularizada por suas inúmeras aplicações na área de aprendizado de máquina, essa classe de funções envolve noções fundamentais de análise funcional e espaços de Hilbert em suas definições e propriedades. Ainda assim, é possível desenvolver uma discussão suficientemente ampla sobre o tema seguindo uma abordagem mais intuitiva e abstraindo-se dos detalhes técnicos. Este será o caminho que adotaremos pelo resto da seção, já que se aprofundar nessa teoria vai além do escopo do projeto. O leitor interessado encontra em~\cite{principe-2010} uma discussão mais completa acerca do assunto.
+Antes de definirmos o que é a correntropia em si, devemos considerar o tópico mais
+amplo de funções núcleo. Popularizada por suas inúmeras aplicações na área de
+aprendizado de máquina, essa classe de funções envolve noções fundamentais de análise
+funcional e espaços de Hilbert em suas definições e propriedades. Ainda assim, é
+possível desenvolver uma discussão suficientemente ampla sobre o tema seguindo uma
+abordagem mais intuitiva e abstraindo-se dos detalhes técnicos. Este será o caminho que
+adotaremos pelo resto da seção, já que se aprofundar nessa teoria vai além do escopo do
+projeto. O leitor interessado encontra em~\cite{principe-2010} uma discussão mais
+completa acerca do assunto.
 
-Essencialmente, uma função núcleo computa a \emph{similaridade} entre dois vetores $\mathbf{x}_1$ e $\mathbf{x}_2$ presentes no mesmo espaço vetorial $X$. Porém, ao contrário de outros operadores que visam ao mesmo objetivo --- como a norma euclidiana da diferença ou a similaridade por cosseno ---, a função implicitamente mapeia os pontos para um espaço vetorial de maior dimensão $F$, e então calcula o produto interno dos vetores transformados. A ideia por trás desse mapeamento é gerar dimensões que reflitam outros aspectos sobre os dados, e, assim, fazer com que o produto interno entre os pontos mapeados seja mais elucidativo em relação à similaridade entre $\mathbf{x}_1$ e $\mathbf{x}_2$.
+Essencialmente, uma função núcleo computa a \emph{similaridade} entre dois vetores
+$\mathbf{x}_1$ e $\mathbf{x}_2$ presentes no mesmo espaço vetorial $X$. Porém, ao
+contrário de outros operadores que visam ao mesmo objetivo --- como a norma euclidiana
+da diferença ou a similaridade por cosseno ---, a função implicitamente mapeia os
+pontos para um espaço vetorial de maior dimensão $F$, e então calcula o produto interno
+dos vetores transformados. A ideia por trás desse mapeamento é gerar dimensões que
+reflitam outros aspectos sobre os dados, e, assim, fazer com que o produto interno
+entre os pontos mapeados seja mais elucidativo em relação à similaridade entre
+$\mathbf{x}_1$ e $\mathbf{x}_2$.
 
-Desse modo, uma \emph{função núcleo} $\kappa$ é definida~\cite{shawetaylor-2004} como sendo uma função que, para todos $\mathbf{x}_1, \mathbf{x}_2 \in X$, satisfaz
+Desse modo, uma \emph{função núcleo} $\kappa$ é definida~\cite{shawetaylor-2004} como
+sendo uma função que, para todos $\mathbf{x}_1, \mathbf{x}_2 \in X$, satisfaz
 \begin{equation}
-    \kappa(\mathbf{x}_1, \mathbf{x}_2) = \bm{\phi}(\mathbf{x}_1)^T \bm{\phi}(\mathbf{x}_2),
-    \symbl{$\kappa$}{Função núcleo}
-    \symbl{$\bm{\phi}$}{Transformação vetorial associada à função núcleo}
+	\kappa(\mathbf{x}_1, \mathbf{x}_2) = \bm{\phi}(\mathbf{x}_1)^T \bm{\phi}(\mathbf{x}_2),
+	\symbl{$\kappa$}{Função núcleo}
+	\symbl{$\bm{\phi}$}{Transformação vetorial associada à função núcleo}
 \end{equation}
 onde $\bm{\phi}$ é uma função vetorial definida por
 \begin{equation}
-    \bm{\phi} : \mathbf{x} \in X \subseteq \mathbb{R}^p \longmapsto \bm{\phi}(\mathbf{x}) \in F \subseteq \mathbb{R}^P.
+	\bm{\phi} : \mathbf{x} \in X \subseteq \mathbb{R}^p \longmapsto \bm{\phi}(\mathbf{x}) \in F \subseteq \mathbb{R}^P.
 \end{equation}
 Para que a estratégia faça sentido, $P \geq p$. É importante notar que \emph{não é preciso conhecer o mapeamento $\bm{\phi}$ associado à função núcleo.} Na verdade, a força do método é justamente essa: usando um núcleo válido\footnote{Um ``núcleo válido'', ou núcleo de Mercer~\cite{principe-2010}, é contínuo, simétrico e positivo definido. Note que, por causa da simetria, podemos afirmar que $\kappa(\mathbf{x}_1, \mathbf{x}_2) = \kappa(\mathbf{x}_2, \mathbf{x}_1)$.}, calcula-se diretamente o produto interno entre dois vetores em $F$, sem aplicar a função $\bm{\phi}$.
 
-Vamos ilustrar a capacidade das funções núcleo por meio de um exemplo. Considere os vetores $\mathbf{x}_1, \mathbf{x}_2 \in \mathbb{R}^2$ descritos por
+Vamos ilustrar a capacidade das funções núcleo por meio de um exemplo. Considere os
+vetores $\mathbf{x}_1, \mathbf{x}_2 \in \mathbb{R}^2$ descritos por
 \begin{equation}
-    \mathbf{x}_1 = \begin{bmatrix} \alpha_1\\\beta_1 \end{bmatrix},\ \mathbf{x}_2 = \begin{bmatrix} \alpha_2\\\beta_2 \end{bmatrix}.
+	\mathbf{x}_1 = \begin{bmatrix} \alpha_1\\\beta_1 \end{bmatrix},\ \mathbf{x}_2 = \begin{bmatrix} \alpha_2\\\beta_2 \end{bmatrix}.
 \end{equation}
 
-Para calcularmos a semelhança entre os vetores, em vez de usarmos o produto interno convencional, usaremos o núcleo polinomial~\cite{principe-2010} de segunda ordem $\kappa(\mathbf{x}_1, \mathbf{x}_2) = ( \mathbf{x}_1^T \mathbf{x}_2 + 1)^2$. Assim,
+Para calcularmos a semelhança entre os vetores, em vez de usarmos o produto interno
+convencional, usaremos o núcleo polinomial~\cite{principe-2010} de segunda ordem
+$\kappa(\mathbf{x}_1, \mathbf{x}_2) = ( \mathbf{x}_1^T \mathbf{x}_2 + 1)^2$. Assim,
 \begin{align}
-    \kappa(\mathbf{x}_1, \mathbf{x}_2) &= (\alpha_1 \alpha_2 + \beta_1 \beta_2 + 1)^2\\
-                                       &= \alpha_1^2 \alpha_2^2 + 2 \alpha_1 \alpha_2 + 2 \alpha_1 \alpha_2 \beta_1 \beta_2 + 2 \beta_1 \beta_2 + \beta_1^2 \beta_2^2 + 1\\
-                                       &= \bm{\phi}(\mathbf{x}_1)^T \bm{\phi}(\mathbf{x}_2);
+	\kappa(\mathbf{x}_1, \mathbf{x}_2) & = (\alpha_1 \alpha_2 + \beta_1 \beta_2 + 1)^2                                                                                     \\
+	                                   & = \alpha_1^2 \alpha_2^2 + 2 \alpha_1 \alpha_2 + 2 \alpha_1 \alpha_2 \beta_1 \beta_2 + 2 \beta_1 \beta_2 + \beta_1^2 \beta_2^2 + 1 \\
+	                                   & = \bm{\phi}(\mathbf{x}_1)^T \bm{\phi}(\mathbf{x}_2);
 \end{align}
 nesse caso, a função $\bm{\phi}$ implicitamente aplicada pelo núcleo foi
 \begin{equation}
-    \bm{\phi}(\mathbf{x}_i) = \begin{bmatrix}
-        \alpha_i^2 &
-        \sqrt{2}\alpha_i &
-        \sqrt{2}\alpha_i\beta_i &
-        \sqrt{2}\beta_i &
-        \beta_i^2 &
-        1
-    \end{bmatrix}^T.
+	\bm{\phi}(\mathbf{x}_i) = \begin{bmatrix}
+		\alpha_i^2              &
+		\sqrt{2}\alpha_i        &
+		\sqrt{2}\alpha_i\beta_i &
+		\sqrt{2}\beta_i         &
+		\beta_i^2               &
+		1
+	\end{bmatrix}^T.
 \end{equation}
 
-Note que $\bm{\phi}(\mathbf{x}_i)$ contém mais informações do que $\mathbf{x}_i$, embora os dados de origem sejam os mesmos. Com $\bm{\phi}(\mathbf{x}_i)$, poderíamos, por exemplo, modelar um sistema quadrático com um algoritmo linear, visto que os termos quadráticos já estão presentes no vetor de entrada. Em outras palavras, \emph{certas relações não-lineares em $X$ se tornam lineares em $F$}. Podemos generalizar essa estratégia para qualquer tipo de núcleo, com a restrição de que normalmente teremos apenas $\kappa$, exigindo então que o algoritmo trabalhe não com vetores individuais, mas com seus produtos internos.
+Note que $\bm{\phi}(\mathbf{x}_i)$ contém mais informações do que $\mathbf{x}_i$,
+embora os dados de origem sejam os mesmos. Com $\bm{\phi}(\mathbf{x}_i)$, poderíamos,
+por exemplo, modelar um sistema quadrático com um algoritmo linear, visto que os termos
+quadráticos já estão presentes no vetor de entrada. Em outras palavras, \emph{certas
+	relações não-lineares em $X$ se tornam lineares em $F$}. Podemos generalizar essa
+estratégia para qualquer tipo de núcleo, com a restrição de que normalmente teremos
+apenas $\kappa$, exigindo então que o algoritmo trabalhe não com vetores individuais,
+mas com seus produtos internos.
 
-Uma das funções núcleo mais importantes --- quiçá a mais importante --- é a gaussiana invariante à translação~\cite{santamaria-2006}, definida como sendo\footnote{A função é normalmente definida sem o fator multiplicativo $1/\sqrt{2\pi}\sigma$, mas como em~\cite{santamaria-2006} o termo está presente, ele também se encontra na nossa definição.}
+Uma das funções núcleo mais importantes --- quiçá a mais importante --- é a gaussiana
+invariante à translação~\cite{santamaria-2006}, definida como sendo\footnote{A função é
+	normalmente definida sem o fator multiplicativo $1/\sqrt{2\pi}\sigma$, mas como
+	em~\cite{santamaria-2006} o termo está presente, ele também se encontra na nossa
+	definição.}
 \begin{equation}
-    \kappa(\mathbf{x}_1, \mathbf{x}_2) = \frac{1}{\sqrt{2\pi} \sigma} \exp\left( - \frac{\lVert \mathbf{x}_1 - \mathbf{x}_2 \rVert^2}{2\sigma^2} \right),\symbl{$\sigma$}{Parâmetro do núcleo gaussiano}
+	\kappa(\mathbf{x}_1, \mathbf{x}_2) = \frac{1}{\sqrt{2\pi} \sigma} \exp\left( - \frac{\lVert \mathbf{x}_1 - \mathbf{x}_2 \rVert^2}{2\sigma^2} \right),\symbl{$\sigma$}{Parâmetro do núcleo gaussiano}
 \end{equation}
 onde $\sigma$ é um parâmetro ajustável. A principal característica deste núcleo é que seu mapeamento $\bm{\phi}$ associado gera um espaço $F$ de dimensão infinita, o que torna computacionalmente impossível calcular $\bm{\phi}(\mathbf{x})$ explicitamente. Além disso, algumas outras particularidades desse núcleo o fazem ser usado na função de correntropia, como veremos a seguir.
 
-Em suma, núcleos são usados para calcular a semelhança entre dois vetores considerando transformações não-lineares aplicadas sobre seus elementos. Com eles, podemos tentar fazer com que relações não-lineares em um espaço vetorial se tornem lineares em outro, o que possibilita a aplicação de métodos mais simples na solução de problemas. Embora poderosas, essas funções não podem ser usadas em qualquer algoritmo linear; é preciso que este trabalhe com produtos internos para que, assim, as ocorrências de $\mathbf{x}_1^T\mathbf{x}_2$ sejam substituídas por um núcleo $\kappa(\mathbf{x}_1, \mathbf{x}_2)$ apropriado.
+Em suma, núcleos são usados para calcular a semelhança entre dois vetores considerando
+transformações não-lineares aplicadas sobre seus elementos. Com eles, podemos tentar
+fazer com que relações não-lineares em um espaço vetorial se tornem lineares em outro,
+o que possibilita a aplicação de métodos mais simples na solução de problemas. Embora
+poderosas, essas funções não podem ser usadas em qualquer algoritmo linear; é preciso
+que este trabalhe com produtos internos para que, assim, as ocorrências de
+$\mathbf{x}_1^T\mathbf{x}_2$ sejam substituídas por um núcleo $\kappa(\mathbf{x}_1,
+	\mathbf{x}_2)$ apropriado.
 
 \section{Função de correntropia}
 
-Agora que possuímos um melhor entendimento sobre funções núcleo, a função de correntropia pode ser formalmente apresentada.
+Agora que possuímos um melhor entendimento sobre funções núcleo, a função de
+correntropia pode ser formalmente apresentada.
 
-Seja $\{\mathbf{x}[n]\}$ uma sequência estocástica, com $n$ sendo o índice associado ao elemento do conjunto, e $\mathbf{x}[n] \in \mathbb{R}^p$, $p \in \mathbb{N}^*$. A função de correlação generalizada, ou simplesmente \emph{correntropia}, é uma função $V : \mathbb{R}^p \times \mathbb{R}^p \mapsto \mathbb{R}$ definida~\cite{santamaria-2006} por
+Seja $\{\mathbf{x}[n]\}$ uma sequência estocástica, com $n$ sendo o índice associado ao
+elemento do conjunto, e $\mathbf{x}[n] \in \mathbb{R}^p$, $p \in \mathbb{N}^*$. A
+função de correlação generalizada, ou simplesmente \emph{correntropia}, é uma função $V
+	: \mathbb{R}^p \times \mathbb{R}^p \mapsto \mathbb{R}$ definida~\cite{santamaria-2006}
+por
 \begin{equation}
-    V_{\textbf{x}\textbf{x}}[n_1, n_2] = E\{ \kappa(\mathbf{x}[n_1], \mathbf{x}[n_2]) \},
-    \symbl{$V_{\cdot\cdot}{[k]}$}{Função de correntropia}
+	V_{\textbf{x}\textbf{x}}[n_1, n_2] = E\{ \kappa(\mathbf{x}[n_1], \mathbf{x}[n_2]) \},
+	\symbl{$V_{\cdot\cdot}{[k]}$}{Função de correntropia}
 \end{equation}
 onde $\kappa$ é um núcleo válido e $E\{\cdot\}$ é o operador de valor esperado estatístico. Como tanto em~\cite{santamaria-2006} quanto em~\cite{pokharel-2006} o núcleo utilizado é o gaussiano, este também será o qual usaremos pelo restante do capítulo. É importante mencionar que, assim como a função núcleo utilizada para sua concepção --- independente de qual seja, contanto que seja válida ---, a correntropia é uma função simétrica positiva definida.
 
-O que faz a função de correntropia ser tão interessante? Em primeiro lugar, a partir da discussão sobre núcleos da seção anterior, podemos afirmar que a correntropia calcula a similaridade média entre dois instantes de uma sequência considerando complexas características não-lineares. Além disso, se expandirmos o núcleo gaussiano em uma série de potências, encontramos
+O que faz a função de correntropia ser tão interessante? Em primeiro lugar, a partir da
+discussão sobre núcleos da seção anterior, podemos afirmar que a correntropia calcula a
+similaridade média entre dois instantes de uma sequência considerando complexas
+características não-lineares. Além disso, se expandirmos o núcleo gaussiano em uma
+série de potências, encontramos
 \begin{equation}
-    V_{\textbf{x}\textbf{x}}[n_1, n_2] = \frac{1}{\sqrt{2\pi}\sigma} \sum_{i=0}^\infty \frac{(-1)^i}{2^i \sigma^{2i} i!} E\{ \lVert \mathbf{x}[n_1] - \mathbf{x}[n_2] \rVert^{2i} \}.
-    \label{eq:correntropy:series-expansion}
+	V_{\textbf{x}\textbf{x}}[n_1, n_2] = \frac{1}{\sqrt{2\pi}\sigma} \sum_{i=0}^\infty \frac{(-1)^i}{2^i \sigma^{2i} i!} E\{ \lVert \mathbf{x}[n_1] - \mathbf{x}[n_2] \rVert^{2i} \}.
+	\label{eq:correntropy:series-expansion}
 \end{equation}
 Note que todos os momentos pares da variável aleatória $\lVert\mathbf{x}[n_1] - \mathbf{x}[n_2]\rVert$ estão presentes na série. Mais especificamente, o termo em $i=1$ é proporcional a
 \begin{equation}
-    E\{ \lVert \mathbf{x}[n_1] - \mathbf{x}[n_2] \rVert^2 \} = E\{ \lVert \mathbf{x}[n_1] \rVert^2 \} + E\{ \lVert \mathbf{x}[n_2] \rVert ^2 \} - 2 E\{ \mathbf{x}[n_1]^T \mathbf{x}[n_2]\},
-    \label{eq:correntropy:expansion-1st-term}
+	E\{ \lVert \mathbf{x}[n_1] - \mathbf{x}[n_2] \rVert^2 \} = E\{ \lVert \mathbf{x}[n_1] \rVert^2 \} + E\{ \lVert \mathbf{x}[n_2] \rVert ^2 \} - 2 E\{ \mathbf{x}[n_1]^T \mathbf{x}[n_2]\},
+	\label{eq:correntropy:expansion-1st-term}
 \end{equation}
 e, como $E\{ \mathbf{x}[n_1]^T \mathbf{x}[n_2] \} = R_{\mathbf{x}\mathbf{x}}[n_1, n_2]$, podemos concluir que as informações associadas à autocorrelação (ou correlação cruzada) estão presentes na função. Ademais, se a sequência tiver média zero, a Equação~\eqref{eq:correntropy:expansion-1st-term} demonstra que a função também incluirá informações acerca das variâncias nos instantes considerados (e a autocorrelação se tornará a covariância).
 
-Ainda analisando a Equação~\eqref{eq:correntropy:series-expansion}, é possível concluir que, para que a correntropia dependa apenas do intervalo entre $n_1$ e $n_2$, é preciso que todos os momentos pares de $\lVert\mathbf{x}[n_1] - \mathbf{x}[n_2]\rVert$ sejam constantes. Uma condição suficiente para isso é que a sequência aleatória $\{\mathbf{x}[n]\}$ seja estacionária no sentido estrito (SSS, de \textit{Strict-Sense Stationary}\abbrev{SSS}{\textit{Strict-Sense Stationary}})~\cite{peebles-1987}. Deste modo, $V_{\textbf{x}\textbf{x}}$ dependerá apenas do intervalo $k = n_2 - n_1$. A função $V_{\textbf{x}\textbf{x}}[k]$ é positiva, simétrica, e com valor máximo na origem.
+Ainda analisando a Equação~\eqref{eq:correntropy:series-expansion}, é possível concluir
+que, para que a correntropia dependa apenas do intervalo entre $n_1$ e $n_2$, é preciso
+que todos os momentos pares de $\lVert\mathbf{x}[n_1] - \mathbf{x}[n_2]\rVert$ sejam
+constantes. Uma condição suficiente para isso é que a sequência aleatória
+$\{\mathbf{x}[n]\}$ seja estacionária no sentido estrito (SSS, de \textit{Strict-Sense
+	Stationary}\abbrev{SSS}{\textit{Strict-Sense Stationary}})~\cite{peebles-1987}. Deste
+modo, $V_{\textbf{x}\textbf{x}}$ dependerá apenas do intervalo $k = n_2 - n_1$. A
+função $V_{\textbf{x}\textbf{x}}[k]$ é positiva, simétrica, e com valor máximo na
+origem.
 
-Supondo a condição de estacionariedade estrita, a correntropia de uma sequência finita de $N$ amostras pode ser estimada por meio da média amostral:
+Supondo a condição de estacionariedade estrita, a correntropia de uma sequência finita
+de $N$ amostras pode ser estimada por meio da média amostral:
 \begin{equation}
-    \hat{V}_{\textbf{x}\textbf{x}}[k] = \frac{1}{N - k + 1} \sum_{n=k}^{N-1} \kappa(\textbf{x}[n], \textbf{x}[n-k]).
+	\hat{V}_{\textbf{x}\textbf{x}}[k] = \frac{1}{N - k + 1} \sum_{n=k}^{N-1} \kappa(\textbf{x}[n], \textbf{x}[n-k]).
 \end{equation}
 Este estimador é não-enviesado e assintoticamente consistente~\cite{santamaria-2006}, e foi o utilizado para o cálculo da correntropia nos experimentos deste capítulo.
 
-E por que o nome de correntropia? Uma outra importante característica da função, omitida neste texto por não ter relevância para o projeto, envolve uma aplicação no contexto de teoria da informação. Assim, o nome \emph{correntropia} é uma aglutinação de \emph{correlação} com \emph{entropia}, duas informações que a estatística contém.
+E por que o nome de correntropia? Uma outra importante característica da função,
+omitida neste texto por não ter relevância para o projeto, envolve uma aplicação no
+contexto de teoria da informação. Assim, o nome \emph{correntropia} é uma aglutinação
+de \emph{correlação} com \emph{entropia}, duas informações que a estatística contém.
 
 \section{Filtro de Correntropia}
 \label{section:correntropy:filter}
 
-Estamos finalmente munidos de todas as ferramentas necessárias para deduzirmos o Filtro de Correntropia. É importante frisar que o Filtro de Wiener FIR causal é empregado em sua modelagem, e como esse sistema já foi apresentado no Capítulo~\ref{chapter:wiener}, a discussão não será secundada aqui.
+Estamos finalmente munidos de todas as ferramentas necessárias para deduzirmos o Filtro
+de Correntropia. É importante frisar que o Filtro de Wiener FIR causal é empregado em
+sua modelagem, e como esse sistema já foi apresentado no Capítulo~\ref{chapter:wiener},
+a discussão não será secundada aqui.
 
-Nosso ponto de partida para a dedução do modelo será um teorema envolvendo a função de correntropia. Dada uma sequência estocástica estacionária $x[n]$ --- por exemplo, o sinal observado no Filtro de Wiener --- e sua correntropia $V_{xx}[n_1, n_2]$, o teorema~\cite{pokharel-2006} afirma que existe um mapeamento $z : \mathbb{R} \mapsto \mathbb{R}$ tal que
+Nosso ponto de partida para a dedução do modelo será um teorema envolvendo a função de
+correntropia. Dada uma sequência estocástica estacionária $x[n]$ --- por exemplo, o
+sinal observado no Filtro de Wiener --- e sua correntropia $V_{xx}[n_1, n_2]$, o
+teorema~\cite{pokharel-2006} afirma que existe um mapeamento $z : \mathbb{R} \mapsto
+	\mathbb{R}$ tal que
 \begin{equation}
-    V_{xx}[n_1, n_2] = E \{ z(x[n_1]) z(x[n_2]) \}.
-    \label{eq:correntropy:theorem}
+	V_{xx}[n_1, n_2] = E \{ z(x[n_1]) z(x[n_2]) \}.
+	\label{eq:correntropy:theorem}
 \end{equation}
 Em outras palavras, a correntropia de $x[n]$ é a autocorrelação da sequência aleatória $z(x[n])$. A prova dessa afirmação, que envolve expandir as funções em autofunções e autovalores, pode ser encontrada em~\cite{pokharel-2006}.
 
-Como vimos na Seção~\ref{section:wiener:fir-filter}, os coeficientes do Filtro de Wiener são computados por meio da matriz de correlação do sinal de entrada. Então, se modelarmos o filtro utilizando a sequência $z(x[n])$ como entrada, será possível usar a correntropia do sinal observado. Desse modo, sejam $x[n]$ o sinal observado e $d[n]$ o sinal desejado, assim como definido no Capítulo~\ref{chapter:wiener}. Além disso, seja $L$ o tamanho do filtro. O vetor de entrada $\mathbf{z}[n]$, definido como sendo
+Como vimos na Seção~\ref{section:wiener:fir-filter}, os coeficientes do Filtro de
+Wiener são computados por meio da matriz de correlação do sinal de entrada. Então, se
+modelarmos o filtro utilizando a sequência $z(x[n])$ como entrada, será possível usar a
+correntropia do sinal observado. Desse modo, sejam $x[n]$ o sinal observado e $d[n]$ o
+sinal desejado, assim como definido no Capítulo~\ref{chapter:wiener}. Além disso, seja
+$L$ o tamanho do filtro. O vetor de entrada $\mathbf{z}[n]$, definido como sendo
 \begin{equation}
-    \mathbf{z}[n] = \begin{bmatrix}
-       z(x[n]) & z(x[n - 1]) & \cdots & z(x[n - L + 1])
-    \end{bmatrix}^T,
-    \symbl{$\mathbf{z}{[n]}$}{Vetor de entrada do Filtro de Correntropia}
+	\mathbf{z}[n] = \begin{bmatrix}
+		z(x[n]) & z(x[n - 1]) & \cdots & z(x[n - L + 1])
+	\end{bmatrix}^T,
+	\symbl{$\mathbf{z}{[n]}$}{Vetor de entrada do Filtro de Correntropia}
 \end{equation}
 resulta nos seguintes coeficientes ótimos para o Filtro de Wiener FIR causal:
 \begin{equation}
-    \mathbf{w}^* = \mathbf{R}_{zz}^{-1} \mathbf{r}_{zd}.
+	\mathbf{w}^* = \mathbf{R}_{zz}^{-1} \mathbf{r}_{zd}.
 \end{equation}
 
-Com base no teorema apresentado, podemos substituir a matriz $\mathbf{R}_{zz}$ pela \emph{matriz de correntropia} de $x[n]$. Supondo que o sinal é estacionário no sentido estrito, a matriz é definida como sendo
+Com base no teorema apresentado, podemos substituir a matriz $\mathbf{R}_{zz}$ pela
+\emph{matriz de correntropia} de $x[n]$. Supondo que o sinal é estacionário no sentido
+estrito, a matriz é definida como sendo
 \begin{equation}
-    \mathbf{V}_{xx} = \begin{bmatrix}
-        V_{xx}[0] & V_{xx}[1] & \cdots & V_{xx}[L - 1]\\
-        V_{xx}[1] & V_{xx}[0] & \cdots & V_{xx}[L - 2]\\
-        \vdots & \vdots & \ddots & \vdots\\
-        V_{xx}[L-1] & V_{xx}[L-2] & \cdots & V_{xx}[0]
-    \end{bmatrix}.
-    \symbl{$\mathbf{V}_{\cdot\cdot}$}{Matriz de correntropia}
+	\mathbf{V}_{xx} = \begin{bmatrix}
+		V_{xx}[0]   & V_{xx}[1]   & \cdots & V_{xx}[L - 1] \\
+		V_{xx}[1]   & V_{xx}[0]   & \cdots & V_{xx}[L - 2] \\
+		\vdots      & \vdots      & \ddots & \vdots        \\
+		V_{xx}[L-1] & V_{xx}[L-2] & \cdots & V_{xx}[0]
+	\end{bmatrix}.
+	\symbl{$\mathbf{V}_{\cdot\cdot}$}{Matriz de correntropia}
 \end{equation}
 
 Assim, a saída do filtro será
 \begin{equation}
-    \hat{d}[n] = \mathbf{z}[n]^T \mathbf{V}_{xx}^{-1} \mathbf{r}_{zd}.
-    \label{eq:correntropy:yn-with-z}
+	\hat{d}[n] = \mathbf{z}[n]^T \mathbf{V}_{xx}^{-1} \mathbf{r}_{zd}.
+	\label{eq:correntropy:yn-with-z}
 \end{equation}
 
-A Equação~\eqref{eq:correntropy:yn-with-z} apresenta o resultado do filtro em função da sequência $z(x[n])$, a qual não conhecemos. Para descrevermos a equação puramente em função de $x[n]$, devemos primeiramente substituir $\mathbf{r}_{zd}$ por um estimador. Supondo ergodicidade, o vetor pode ser aproximado por sua média temporal,
+A Equação~\eqref{eq:correntropy:yn-with-z} apresenta o resultado do filtro em função da
+sequência $z(x[n])$, a qual não conhecemos. Para descrevermos a equação puramente em
+função de $x[n]$, devemos primeiramente substituir $\mathbf{r}_{zd}$ por um estimador.
+Supondo ergodicidade, o vetor pode ser aproximado por sua média temporal,
 \begin{equation}
-    \hat{\mathbf{r}}_{zd} = \frac{1}{N} \sum_{k=0}^{N-1} d[k] \mathbf{z}[k].
+	\hat{\mathbf{r}}_{zd} = \frac{1}{N} \sum_{k=0}^{N-1} d[k] \mathbf{z}[k].
 \end{equation}
 Então, fazendo a substituição e depois expandindo os produtos vetoriais em~\eqref{eq:correntropy:yn-with-z}, encontramos que
 \begin{align}
-    \hat{d}[n] &= \mathbf{z}[n]^T \mathbf{V}_{xx}^{-1} \mathbf{r}_{zd}\\
-         &\simeq \mathbf{z}[n]^T \mathbf{V}_{xx}^{-1} \frac{1}{N} \sum_{k=0}^{N-1} d[k] \mathbf{z}[k]\\
-         &= \frac{1}{N} \sum_{k=0}^{N-1} \sum_{i=0}^{L-1} \sum_{j=0}^{L-1} z(x[n-i]) \Tilde{v}_{ij} d[k] z(x[k-j])\\
-         &= \frac{1}{N} \sum_{k=0}^{N-1} d[k] \sum_{i=0}^{L-1} \sum_{j=0}^{L-1} \Tilde{v}_{ij} z(x[n-i]) z(x[k-j])\\
-         &\simeq \frac{1}{N} \sum_{k=0}^{N-1} d[k] \sum_{i=0}^{L-1} \sum_{j=0}^{L-1} \Tilde{v}_{ij} \kappa(x[n-i], x[k-j]),
-         \label{eq:correntropy:filter}
+	\hat{d}[n] & = \mathbf{z}[n]^T \mathbf{V}_{xx}^{-1} \mathbf{r}_{zd}                                                            \\
+	           & \simeq \mathbf{z}[n]^T \mathbf{V}_{xx}^{-1} \frac{1}{N} \sum_{k=0}^{N-1} d[k] \mathbf{z}[k]                       \\
+	           & = \frac{1}{N} \sum_{k=0}^{N-1} \sum_{i=0}^{L-1} \sum_{j=0}^{L-1} z(x[n-i]) \Tilde{v}_{ij} d[k] z(x[k-j])          \\
+	           & = \frac{1}{N} \sum_{k=0}^{N-1} d[k] \sum_{i=0}^{L-1} \sum_{j=0}^{L-1} \Tilde{v}_{ij} z(x[n-i]) z(x[k-j])          \\
+	           & \simeq \frac{1}{N} \sum_{k=0}^{N-1} d[k] \sum_{i=0}^{L-1} \sum_{j=0}^{L-1} \Tilde{v}_{ij} \kappa(x[n-i], x[k-j]),
+	\label{eq:correntropy:filter}
 \end{align}
 onde $\Tilde{v}_{ij}$\symbl{$\Tilde{v}_{ij}$}{Elemento na $i$-ésima linha e $j$-ésima coluna do inverso da matriz de correntropia} é o elemento da $i$-ésima linha e $j$-ésima coluna de $\mathbf{V}_{xx}^{-1}$. A expressão final é encontrada aproximando-se $z(x[n-i]) z(x[k-j])$ por $\kappa(x[n-i], x[k-j])$, que é uma aproximação válida na média de acordo com a Equação~\eqref{eq:correntropy:theorem}.
 
-O Filtro de Correntropia é totalmente caracterizado pela Equação~\eqref{eq:correntropy:filter}; com ela, calcula-se a $n$-ésima amostra da estimação. A Figura~\ref{fig:correntropy:filter} ilustra este processo, considerando que o inverso da matriz de correntropia já foi computado, e usando versões vetoriais de $x[n]$, como definido na Equação~\eqref{eq:wf:xn-vector}. Em~\cite{pokharel-2006, pokharel-2007}, menciona-se uma etapa adicional em que se iguala a variância de $\hat{d}[n]$ com a de $d[n]$ por meio de uma correção de ganho, e que essa disparidade é muito provavelmente resultado da aproximação feita no último passo da modelagem do filtro. Nos testes do projeto, foi observado que essa correção é \emph{essencial} para a obtenção de resultados satisfatórios.
+O Filtro de Correntropia é totalmente caracterizado pela
+Equação~\eqref{eq:correntropy:filter}; com ela, calcula-se a $n$-ésima amostra da
+estimação. A Figura~\ref{fig:correntropy:filter} ilustra este processo, considerando
+que o inverso da matriz de correntropia já foi computado, e usando versões vetoriais de
+$x[n]$, como definido na Equação~\eqref{eq:wf:xn-vector}. Em~\cite{pokharel-2006,
+	pokharel-2007}, menciona-se uma etapa adicional em que se iguala a variância de
+$\hat{d}[n]$ com a de $d[n]$ por meio de uma correção de ganho, e que essa disparidade
+é muito provavelmente resultado da aproximação feita no último passo da modelagem do
+filtro. Nos testes do projeto, foi observado que essa correção é \emph{essencial} para
+a obtenção de resultados satisfatórios.
 \begin{figure}[!ht]
-    \centering
-     \begin{subfigure}[t]{\textwidth}
-        \centering
-        \input{images/correntropia/correntropy-block-diagram}
-        \caption{Diagrama de blocos para o cálculo da $n$-ésima amostra.}
-        \label{fig:correntropy:block-diagram}
-    \end{subfigure}
+	\centering
+	\begin{subfigure}[t]{\textwidth}
+		\centering
+		\input{images/correntropia/correntropy-block-diagram}
+		\caption{Diagrama de blocos para o cálculo da $n$-ésima amostra.}
+		\label{fig:correntropy:block-diagram}
+	\end{subfigure}
 
-    \bigskip\medskip
+	\bigskip\medskip
 
-    \begin{subfigure}[t]{\textwidth}
-        \centering
-        \input{images/correntropia/sigma-block-specification}
-        \caption{Detalhamento do bloco $S$ do diagrama.}
-        \label{fig:correntropy:sigma-specification}
-    \end{subfigure}
+	\begin{subfigure}[t]{\textwidth}
+		\centering
+		\input{images/correntropia/sigma-block-specification}
+		\caption{Detalhamento do bloco $S$ do diagrama.}
+		\label{fig:correntropy:sigma-specification}
+	\end{subfigure}
 
-    \caption[Diagrama de blocos do Filtro de Correntropia]{Diagrama de blocos que ilustra o algoritmo do Filtro de Correntropia, e detalhe do bloco $S$; $\mathbf{x}[k]$ é um vetor como definido em~\eqref{eq:wf:xn-vector}. Ilustrações baseadas em desenhos similares presentes em~\cite{pokharel-2007}.}
-    \label{fig:correntropy:filter}
+	\caption[Diagrama de blocos do Filtro de Correntropia]{Diagrama de blocos que ilustra o algoritmo do Filtro de Correntropia, e detalhe do bloco $S$; $\mathbf{x}[k]$ é um vetor como definido em~\eqref{eq:wf:xn-vector}. Ilustrações baseadas em desenhos similares presentes em~\cite{pokharel-2007}.}
+	\label{fig:correntropy:filter}
 \end{figure}
 
 \subsection{Solução matricial}
 
-A Equação~\eqref{eq:correntropy:filter} apresenta um problema operacional grave: a complexidade para se calcular uma amostra da saída, mesmo com o inverso da matriz de correntropia já computado, é $O(N L^2)$; consequentemente, a complexidade para gerarmos a estimação em sua totalidade é $O(N^2 L^2)$. Isso ocorre porque não temos coeficientes explícitos associados ao filtro, diferentemente do Filtro de Wiener. Para uma gravação de áudio de alta qualidade, que normalmente contém mais de 40 mil amostras por segundo, uma complexidade tão alta se torna um obstáculo para o desenvolvimento do projeto.
+A Equação~\eqref{eq:correntropy:filter} apresenta um problema operacional grave: a
+complexidade para se calcular uma amostra da saída, mesmo com o inverso da matriz de
+correntropia já computado, é $O(N L^2)$; consequentemente, a complexidade para gerarmos
+a estimação em sua totalidade é $O(N^2 L^2)$. Isso ocorre porque não temos coeficientes
+explícitos associados ao filtro, diferentemente do Filtro de Wiener. Para uma gravação
+de áudio de alta qualidade, que normalmente contém mais de 40 mil amostras por segundo,
+uma complexidade tão alta se torna um obstáculo para o desenvolvimento do projeto.
 
-Para mitigar esse problema, podemos tentar reescrever a Equação~\eqref{eq:correntropy:filter} como uma expressão matricial. Assim, embora o algoritmo continue sendo de alta complexidade, ele poderá ser vetorizado, resultando num ganho computacional considerável em máquinas que suportem esse tipo de operação.
+Para mitigar esse problema, podemos tentar reescrever a
+Equação~\eqref{eq:correntropy:filter} como uma expressão matricial. Assim, embora o
+algoritmo continue sendo de alta complexidade, ele poderá ser vetorizado, resultando
+num ganho computacional considerável em máquinas que suportem esse tipo de operação.
 
-Começaremos definindo a \emph{matriz núcleo} de $x[n]$, a qual será representada por $\mathbf{K}_{xx}$. Esta matriz é quadrada, simétrica, com dimensões $N \times N$ (ou seja, sem as condições iniciais nulas de $x[n]$), e seus elementos são definidos por
+Começaremos definindo a \emph{matriz núcleo} de $x[n]$, a qual será representada por
+$\mathbf{K}_{xx}$. Esta matriz é quadrada, simétrica, com dimensões $N \times N$ (ou
+seja, sem as condições iniciais nulas de $x[n]$), e seus elementos são definidos por
 \begin{equation}
-     (\mathbf{K}_{xx})_{ij} = \kappa(x[N - 1 - i], x[N - 1 - j]).
-     \symbl{$\mathbf{K}_{\cdot\cdot}$}{Matriz núcleo}
+	(\mathbf{K}_{xx})_{ij} = \kappa(x[N - 1 - i], x[N - 1 - j]).
+	\symbl{$\mathbf{K}_{\cdot\cdot}$}{Matriz núcleo}
 \end{equation}
 
-Com a matriz núcleo, é possível computar todos os somatórios associados aos índices $i$ e $j$ na Equação~\eqref{eq:correntropy:filter} em ``uma operação só'', realizando uma convolução matricial\footnote{Normalmente, em uma convolução matricial, uma das matrizes tem suas linhas e colunas invertidas antes do processo, de modo similar ao que acontece no caso funcional. Na nossa aplicação, porém, essa inversão não é aplicada.} entre $\textbf{V}_{xx}^{-1}$ e $\mathbf{K}_{xx}$. Em outras palavras,
+Com a matriz núcleo, é possível computar todos os somatórios associados aos índices $i$
+e $j$ na Equação~\eqref{eq:correntropy:filter} em ``uma operação só'', realizando uma
+convolução matricial\footnote{Normalmente, em uma convolução matricial, uma das
+	matrizes tem suas linhas e colunas invertidas antes do processo, de modo similar ao que
+	acontece no caso funcional. Na nossa aplicação, porém, essa inversão não é aplicada.}
+entre $\textbf{V}_{xx}^{-1}$ e $\mathbf{K}_{xx}$. Em outras palavras,
 \begin{equation}
-    (\textbf{V}_{xx}^{-1} * \mathbf{K}_{xx})_{ij} = \sum_{p=i}^{i+L-1} \sum_{q=j}^{j+L-1} \Tilde{v}_{(p-i)(q-j)} \kappa(x[N - 1 - p], x[N - 1 - q]).
+	(\textbf{V}_{xx}^{-1} * \mathbf{K}_{xx})_{ij} = \sum_{p=i}^{i+L-1} \sum_{q=j}^{j+L-1} \Tilde{v}_{(p-i)(q-j)} \kappa(x[N - 1 - p], x[N - 1 - q]).
 \end{equation}
 Antes da convolução, é feito um \textit{zero padding} assimétrico em $\mathbf{K}_{xx}$, adicionando $L-1$ linhas nulas abaixo e $L-1$ colunas nulas à direita da matriz. Assim, o resultado da convolução é uma matriz de dimensões $N \times N$.
 
-Finalmente, definindo $\mathbf{d} \in \mathbb{R}^N$ como sendo o vetor com todas as amostras do sinal desejado, ou seja,
+Finalmente, definindo $\mathbf{d} \in \mathbb{R}^N$ como sendo o vetor com todas as
+amostras do sinal desejado, ou seja,
 \begin{equation}
-    \mathbf{d} = \begin{bmatrix}
-        d[N-1] & d[N-2] & \cdots & d[1] & d[0]
-    \end{bmatrix}^T,
-    \symbl{$\mathbf{d}$}{Vetor com todas as amostras do sinal desejado}
+	\mathbf{d} = \begin{bmatrix}
+		d[N-1] & d[N-2] & \cdots & d[1] & d[0]
+	\end{bmatrix}^T,
+	\symbl{$\mathbf{d}$}{Vetor com todas as amostras do sinal desejado}
 \end{equation}
 o Filtro de Correntropia pode então ser representado da seguinte forma:
 \begin{equation}
-    \hat{\mathbf{d}} = \frac{1}{N} (\textbf{V}_{xx}^{-1} * \mathbf{K}_{xx}) \mathbf{d}.
+	\hat{\mathbf{d}} = \frac{1}{N} (\textbf{V}_{xx}^{-1} * \mathbf{K}_{xx}) \mathbf{d}.
 \end{equation}
 
 \section{Testes preliminares}
 
-Se comparado a outros métodos mais consolidados --- como o próprio Filtro de Wiener, por exemplo ---, o Filtro de Correntropia é um modelo ainda pouco explorado. Isto é corroborado pela literatura consultada para o projeto, na qual não há uma discussão suficientemente satisfatória acerca das capacidades e limitações do algoritmo. Por esse motivo, é interessante que façamos uma análise preliminar do filtro; assim, conseguiremos identificar suas particularidades, o que idealmente facilitará não somente a modelagem do sistema de estimação, como também a interpretação dos resultados dos experimentos.
+Se comparado a outros métodos mais consolidados --- como o próprio Filtro de Wiener,
+por exemplo ---, o Filtro de Correntropia é um modelo ainda pouco explorado. Isto é
+corroborado pela literatura consultada para o projeto, na qual não há uma discussão
+suficientemente satisfatória acerca das capacidades e limitações do algoritmo. Por esse
+motivo, é interessante que façamos uma análise preliminar do filtro; assim,
+conseguiremos identificar suas particularidades, o que idealmente facilitará não
+somente a modelagem do sistema de estimação, como também a interpretação dos resultados
+dos experimentos.
 
-Em nossos testes, usaremos dois sinais principais; ambos mais simples do que as gravações sonoras utilizadas nos experimentos finais, mas não menos significativos. O primeiro é composto pelo somatório de cinco senoides, uma delas assumindo a frequência fundamental de 3~Hz, e as restantes representando os quatro harmônicos subsequentes. A forma de onda resultante, a qual foi amostrada a uma frequência de $f_s =$ 2~kHz durante 1~s, se encontra na Figura~\ref{fig:correntropy:sinewave}. Por se tratar de um sinal suave, será possível avaliar graficamente a eficiência do método, sem precisarmos nos basear apenas em medidas numéricas.
+Em nossos testes, usaremos dois sinais principais; ambos mais simples do que as
+gravações sonoras utilizadas nos experimentos finais, mas não menos significativos. O
+primeiro é composto pelo somatório de cinco senoides, uma delas assumindo a frequência
+fundamental de 3~Hz, e as restantes representando os quatro harmônicos subsequentes. A
+forma de onda resultante, a qual foi amostrada a uma frequência de $f_s =$ 2~kHz
+durante 1~s, se encontra na Figura~\ref{fig:correntropy:sinewave}. Por se tratar de um
+sinal suave, será possível avaliar graficamente a eficiência do método, sem precisarmos
+nos basear apenas em medidas numéricas.
 
 \begin{figure}[!ht]
-    \centering
-    \input{images/correntropia/poc-sinewave}
-    \caption[Forma de onda gerada a partir de senoides utilizada nos experimentos preliminares do Filtro de Correntropia]{Forma de onda utilizada nos experimentos preliminares do Filtro de Correntropia, gerada a partir de senoides. Uma dessas senoides está na frequência fundamental de 3~Hz, e as outras assumem os quatro harmônicos consecutivos: 6~Hz, 9~Hz, 12~Hz e 15~Hz. As amplitudes dos componentes foram omitidas aqui por falta de relevância, mas podem ser encontradas no código do projeto~\cite{nonlinear-filters-repo}.}
-    \label{fig:correntropy:sinewave}
+	\centering
+	\input{images/correntropia/poc-sinewave}
+	\caption[Forma de onda gerada a partir de senoides utilizada nos experimentos preliminares do Filtro de Correntropia]{Forma de onda utilizada nos experimentos preliminares do Filtro de Correntropia, gerada a partir de senoides. Uma dessas senoides está na frequência fundamental de 3~Hz, e as outras assumem os quatro harmônicos consecutivos: 6~Hz, 9~Hz, 12~Hz e 15~Hz. As amplitudes dos componentes foram omitidas aqui por falta de relevância, mas podem ser encontradas no código do projeto~\cite{nonlinear-filters-repo}.}
+	\label{fig:correntropy:sinewave}
 \end{figure}
 
-O segundo sinal a ser utilizado é um modelo autorregressivo (AR\abbrev{AR}{Autorregressivo}). Uma forma comum de se modelar sinais é por meio de um sistema fonte-filtro, em que a entrada é um ruído branco e a resposta em frequência do filtro representa o espectro do sinal desejado. O modelo AR é baseado em um filtro do tipo só-polos, no qual as raízes do denominador definem o espectro. Este sistema é muito usado em processamento de áudio porque a maioria das emissões sonoras envolve ressonâncias --- ou seja, polos~\cite{godsill-2002}. Deste modo, ao usarmos este modelo nos testes, poderemos ter uma primeira impressão de como o algoritmo se comporta com gravações sonoras. O sinal foi gerado com um filtro de ordem 80 (40 pares de polos), a uma taxa de amostragem de $f_s = 44.1$~kHz durante 200~ms, e sua faixa de valores foi limitada em $[-1, 1]$, assim como em sinais de áudio digitais.
+O segundo sinal a ser utilizado é um modelo autorregressivo
+(AR\abbrev{AR}{Autorregressivo}). Uma forma comum de se modelar sinais é por meio de um
+sistema fonte-filtro, em que a entrada é um ruído branco e a resposta em frequência do
+filtro representa o espectro do sinal desejado. O modelo AR é baseado em um filtro do
+tipo só-polos, no qual as raízes do denominador definem o espectro. Este sistema é
+muito usado em processamento de áudio porque a maioria das emissões sonoras envolve
+ressonâncias --- ou seja, polos~\cite{godsill-2002}. Deste modo, ao usarmos este modelo
+nos testes, poderemos ter uma primeira impressão de como o algoritmo se comporta com
+gravações sonoras. O sinal foi gerado com um filtro de ordem 80 (40 pares de polos), a
+uma taxa de amostragem de $f_s = 44.1$~kHz durante 200~ms, e sua faixa de valores foi
+limitada em $[-1, 1]$, assim como em sinais de áudio digitais.
 
-Como o modelo autorregressivo resulta em uma forma de onda de aparência ruidosa, não será possível avaliar a eficácia do filtro graficamente como faremos com a entrada senoidal. Por isso, metrificaremos numericamente a qualidade da estimação com a SDR, que pode ser prontamente generalizada para quaisquer dois sinais unidimensionais. Além disso, também tentaremos estimar os sinais com o Filtro de Wiener, para que possamos observar se o Filtro de Correntropia é melhor, pior, ou tão bom quanto um filtro linear ótimo (para as condições propostas).
+Como o modelo autorregressivo resulta em uma forma de onda de aparência ruidosa, não
+será possível avaliar a eficácia do filtro graficamente como faremos com a entrada
+senoidal. Por isso, metrificaremos numericamente a qualidade da estimação com a SDR,
+que pode ser prontamente generalizada para quaisquer dois sinais unidimensionais. Além
+disso, também tentaremos estimar os sinais com o Filtro de Wiener, para que possamos
+observar se o Filtro de Correntropia é melhor, pior, ou tão bom quanto um filtro linear
+ótimo (para as condições propostas).
 
 \subsection{Experimento: estimação linear}
 
-O primeiro experimento visou a avaliar a capacidade do filtro de reproduzir distorções lineares. Para isso, os sinais de teste foram ambos filtrados pelo mesmo passa-baixas: uma média móvel de ordem 150. Porém, para tornar o experimento mais interessante, foi estipulado que ambos os filtros testados tivessem ordem $L = 10$, um valor substancialmente menor do que a ordem do sistema a ser reproduzido. O valor considerado ótimo para o parâmetro do núcleo gaussiano foi $\sigma = 1 \times 10^{-10}$. Os resultados do experimento se encontram na Tabela~\ref{tab:correntropy:poc-experiment-1}; na Figura~\ref{fig:correntropy:poc-experiment-1}, encontram-se as formas de onda estimadas pelos filtros para o sinal senoidal.
-{\def\arraystretch{1.25}\tabcolsep=10pt
-\begin{table}[!ht]
-    \centering
-    \caption[Resultados do primeiro experimento preliminar: estimação linear]{Resultados, em SDR, do primeiro experimento preliminar.}
-    \label{tab:correntropy:poc-experiment-1}
-    \begin{tabular}{cccc}
-        \toprule
-                    & Original & Wiener       & Correntropia  \\ \midrule
-        Senoides    & $-2.99$ dB & $3.10$ dB    & $41.06$ dB    \\
-        Modelo AR   & $-46.30$ dB & $3.24$ dB    & $75.54$ dB    \\ \bottomrule
-    \end{tabular}
-\end{table}
-}
+O primeiro experimento visou a avaliar a capacidade do filtro de reproduzir distorções
+lineares. Para isso, os sinais de teste foram ambos filtrados pelo mesmo passa-baixas:
+uma média móvel de ordem 150. Porém, para tornar o experimento mais interessante, foi
+estipulado que ambos os filtros testados tivessem ordem $L = 10$, um valor
+substancialmente menor do que a ordem do sistema a ser reproduzido. O valor considerado
+ótimo para o parâmetro do núcleo gaussiano foi $\sigma = 1 \times 10^{-10}$. Os
+resultados do experimento se encontram na
+Tabela~\ref{tab:correntropy:poc-experiment-1}; na
+Figura~\ref{fig:correntropy:poc-experiment-1}, encontram-se as formas de onda estimadas
+pelos filtros para o sinal senoidal. {\def\arraystretch{1.25}\tabcolsep=10pt
+		\begin{table}[!ht]
+			\centering
+			\caption[Resultados do primeiro experimento preliminar: estimação linear]{Resultados, em SDR, do primeiro experimento preliminar.}
+			\label{tab:correntropy:poc-experiment-1}
+			\begin{tabular}{cccc}
+				\toprule
+				          & Original    & Wiener    & Correntropia \\ \midrule
+				Senoides  & $-2.99$ dB  & $3.10$ dB & $41.06$ dB   \\
+				Modelo AR & $-46.30$ dB & $3.24$ dB & $75.54$ dB   \\ \bottomrule
+			\end{tabular}
+		\end{table}
+	}
 \begin{figure}[!ht]
-    \centering
-    \input{images/correntropia/poc-experiment-1}
-    \caption[Saída desejada e estimações do primeiro experimento preliminar]{Gráfico com a saída desejada (quando a entrada é o somatório de senoides) e as estimações computadas pelos filtros para o primeiro experimento preliminar com o Filtro de Correntropia.}
-    \label{fig:correntropy:poc-experiment-1}
+	\centering
+	\input{images/correntropia/poc-experiment-1}
+	\caption[Saída desejada e estimações do primeiro experimento preliminar]{Gráfico com a saída desejada (quando a entrada é o somatório de senoides) e as estimações computadas pelos filtros para o primeiro experimento preliminar com o Filtro de Correntropia.}
+	\label{fig:correntropy:poc-experiment-1}
 \end{figure}
 
-Como podemos observar, o Filtro de Correntropia conseguiu estimar melhor as saídas desejadas, mesmo com ordem reduzida. Dois fatores possivelmente explicam esse fenômeno: em primeiro lugar, tem-se o mapeamento infinito realizado pelo núcleo gaussiano, o que pode ter compensado a menor ordem; além disso, o filtro pode ter feito melhor proveito das amostras do sinal desejado, já que estas são usadas diretamente na geração das amostras da estimação (ao contrário do Filtro de Wiener, que as usa somente no cálculo do vetor de correlação cruzada).
+Como podemos observar, o Filtro de Correntropia conseguiu estimar melhor as saídas
+desejadas, mesmo com ordem reduzida. Dois fatores possivelmente explicam esse fenômeno:
+em primeiro lugar, tem-se o mapeamento infinito realizado pelo núcleo gaussiano, o que
+pode ter compensado a menor ordem; além disso, o filtro pode ter feito melhor proveito
+das amostras do sinal desejado, já que estas são usadas diretamente na geração das
+amostras da estimação (ao contrário do Filtro de Wiener, que as usa somente no cálculo
+do vetor de correlação cruzada).
 
 \subsection{Experimento: estimação não-linear}
 
-Neste experimento, queremos observar a capacidade de estimação de distorções não-lineares do filtro, o principal motivador deste capítulo. Para isso, os sinais de teste foram processados por uma função de \textit{soft clipping} definida por
+Neste experimento, queremos observar a capacidade de estimação de distorções
+não-lineares do filtro, o principal motivador deste capítulo. Para isso, os sinais de
+teste foram processados por uma função de \textit{soft clipping} definida por
 \begin{equation}
-    f(x) = \frac{2}{\pi} \arctan(1.5 x),
+	f(x) = \frac{2}{\pi} \arctan(1.5 x),
 \end{equation}
 a qual apresenta comportamento aproximadamente linear em torno da origem, e comprime sinais na faixa de $[-1, 1]$ para a faixa de $[-0.63, 0.63]$. A ordem definida para o Filtro de Wiener foi de $L = 34$, ao passo que para o Filtro de Correntropia a ordem com os melhores resultados foi de $L = 1$, em conjunto com um desvio de $\sigma = 0.9$. As notas se encontram na Tabela~\ref{tab:correntropy:poc-experiment-2}; na Figura~\ref{fig:correntropy:poc-experiment-2}, as formas de onda estimadas para o sinal senoidal são apresentadas.
-{\def\arraystretch{1.25}\tabcolsep=10pt
-\begin{table}[!ht]
-    \centering
-    \caption[Resultados do segundo experimento preliminar: estimação não-linear]{Resultados, em SDR, do segundo experimento preliminar.}
-    \label{tab:correntropy:poc-experiment-2}
-    \begin{tabular}{cccc}
-        \toprule
-                    & Original & Wiener        & Correntropia      \\ \midrule
-        Senoides    & $8.72$ dB & $20.05$ dB    & $33.59$ dB        \\
-        Modelo AR   & $11.96$ dB & $20.14$ dB    & $31.59$ dB        \\ \bottomrule
-    \end{tabular}
-\end{table}
-}
+	{\def\arraystretch{1.25}\tabcolsep=10pt
+		\begin{table}[!ht]
+			\centering
+			\caption[Resultados do segundo experimento preliminar: estimação não-linear]{Resultados, em SDR, do segundo experimento preliminar.}
+			\label{tab:correntropy:poc-experiment-2}
+			\begin{tabular}{cccc}
+				\toprule
+				          & Original   & Wiener     & Correntropia \\ \midrule
+				Senoides  & $8.72$ dB  & $20.05$ dB & $33.59$ dB   \\
+				Modelo AR & $11.96$ dB & $20.14$ dB & $31.59$ dB   \\ \bottomrule
+			\end{tabular}
+		\end{table}
+	}
 \begin{figure}[!ht]
-    \centering
-    \input{images/correntropia/poc-experiment-2}
-    \caption[Saída desejada e estimações do segundo experimento preliminar]{Gráfico com a saída desejada (quando a entrada é o somatório de senoides) e as estimações computadas pelos filtros para o segundo experimento preliminar com o Filtro de Correntropia.}
-    \label{fig:correntropy:poc-experiment-2}
+	\centering
+	\input{images/correntropia/poc-experiment-2}
+	\caption[Saída desejada e estimações do segundo experimento preliminar]{Gráfico com a saída desejada (quando a entrada é o somatório de senoides) e as estimações computadas pelos filtros para o segundo experimento preliminar com o Filtro de Correntropia.}
+	\label{fig:correntropy:poc-experiment-2}
 \end{figure}
 
-Os resultados ficaram bem próximos. Mas isso era esperado; afinal, a função de \textit{soft clipping} afetou apenas os máximos e mínimos locais mais acentuados dos sinais. Porém, é possível ver claramente que o Filtro de Correntropia gerou as melhores estimações: note, na Figura~\ref{fig:correntropy:poc-experiment-2}, como o método conseguiu reproduzir a limitação nos picos e vales, o que o Filtro de Wiener foi incapaz de fazer.
+Os resultados ficaram bem próximos. Mas isso era esperado; afinal, a função de
+\textit{soft clipping} afetou apenas os máximos e mínimos locais mais acentuados dos
+sinais. Porém, é possível ver claramente que o Filtro de Correntropia gerou as melhores
+estimações: note, na Figura~\ref{fig:correntropy:poc-experiment-2}, como o método
+conseguiu reproduzir a limitação nos picos e vales, o que o Filtro de Wiener foi
+incapaz de fazer.
 
 \subsection{Experimento: robustez a ruído}
 
-A última característica de grande relevância para o projeto é a robustez do filtro a sinais espúrios. Estes podem ser introduzidos no sistema em dois pontos distintos: antes ou depois da aplicação da distorção. Ambos os casos são importantes e envolvem um conjunto de particularidades próprias; porém, como os resultados observados foram similares, focaremos apenas no caso de adição após a distorção.
+A última característica de grande relevância para o projeto é a robustez do filtro a
+sinais espúrios. Estes podem ser introduzidos no sistema em dois pontos distintos:
+antes ou depois da aplicação da distorção. Ambos os casos são importantes e envolvem um
+conjunto de particularidades próprias; porém, como os resultados observados foram
+similares, focaremos apenas no caso de adição após a distorção.
 
-Neste par de experimentos, foram usados os mesmos sinais desejados da subseção anterior, mas agora com ruído aditivo nas observações. Às senoides, somou-se ruído branco gaussiano com $-20$~dB de potência; já ao processo autorregressivo, foi somado outro modelo AR gerado de forma idêntica (um ganho de $0.5$ foi aplicado à mistura para manter a limitação de amplitude). Foram mantidos os parâmetros de $L = 34$ para o Filtro de Wiener e $L = 1$, $\sigma = 0.9$ para o Filtro de Correntropia. Os resultados estão presentes na Tabela~\ref{tab:correntropy:poc-experiment-3}; na Figura~\ref{fig:correntropy:poc-experiment-3} encontram-se as estimações para a entrada senoidal.
-{\def\arraystretch{1.25}\tabcolsep=10pt
-\begin{table}[!ht]
-    \centering
-    \caption[Resultados do terceiro experimento preliminar: robustez a ruído]{Resultados, em SDR, do terceiro experimento preliminar.}
-    \label{tab:correntropy:poc-experiment-3}
-    \begin{tabular}{cccc}
-        \toprule
-                    & Original & Wiener    & Correntropia      \\ \midrule
-        Senoides    & $8.72$ dB & $19.67$ dB    & $24.83$ dB    \\
-        Modelo AR   & $11.96$ dB & $6.01$ dB    & $9.51$ dB    \\ \bottomrule
-    \end{tabular}
-\end{table}
-}
+Neste par de experimentos, foram usados os mesmos sinais desejados da subseção
+anterior, mas agora com ruído aditivo nas observações. Às senoides, somou-se ruído
+branco gaussiano com $-20$~dB de potência; já ao processo autorregressivo, foi somado
+outro modelo AR gerado de forma idêntica (um ganho de $0.5$ foi aplicado à mistura para
+manter a limitação de amplitude). Foram mantidos os parâmetros de $L = 34$ para o
+Filtro de Wiener e $L = 1$, $\sigma = 0.9$ para o Filtro de Correntropia. Os resultados
+estão presentes na Tabela~\ref{tab:correntropy:poc-experiment-3}; na
+Figura~\ref{fig:correntropy:poc-experiment-3} encontram-se as estimações para a entrada
+senoidal. {\def\arraystretch{1.25}\tabcolsep=10pt
+		\begin{table}[!ht]
+			\centering
+			\caption[Resultados do terceiro experimento preliminar: robustez a ruído]{Resultados, em SDR, do terceiro experimento preliminar.}
+			\label{tab:correntropy:poc-experiment-3}
+			\begin{tabular}{cccc}
+				\toprule
+				          & Original   & Wiener     & Correntropia \\ \midrule
+				Senoides  & $8.72$ dB  & $19.67$ dB & $24.83$ dB   \\
+				Modelo AR & $11.96$ dB & $6.01$ dB  & $9.51$ dB    \\ \bottomrule
+			\end{tabular}
+		\end{table}
+	}
 \begin{figure}[!ht]
-    \centering
-    \input{images/correntropia/poc-experiment-3}
-    \caption[Saída desejada e estimações do terceiro experimento preliminar]{Gráfico com a saída desejada (quando a entrada é o somatório de senoides) e as estimações computadas pelos filtros para o terceiro experimento preliminar com o Filtro de Correntropia.}
-    \label{fig:correntropy:poc-experiment-3}
+	\centering
+	\input{images/correntropia/poc-experiment-3}
+	\caption[Saída desejada e estimações do terceiro experimento preliminar]{Gráfico com a saída desejada (quando a entrada é o somatório de senoides) e as estimações computadas pelos filtros para o terceiro experimento preliminar com o Filtro de Correntropia.}
+	\label{fig:correntropy:poc-experiment-3}
 \end{figure}
 
 É possível constatar que os métodos se comportaram de forma similar: no sinal senoidal, ambos os filtros removeram o ruído, e o Filtro de Correntropia continuou conseguindo estimar aproximadamente a distorção; já no modelo AR, nenhum dos dois conseguiu replicar o sinal desejado como no experimento anterior. Foi constatada também uma maior sensibilidade do Filtro de Correntropia a ganhos aplicados no sinal observado: sem a correção de ganho de $0.5$ na mistura de sinais autorregressivos, a estimação do filtro caía para torno de $0$~dB.
@@ -299,155 +478,281 @@ Neste par de experimentos, foram usados os mesmos sinais desejados da subseção
 \subsection{Considerações adicionais}
 \label{subsec:correntropy:considerations}
 
-Antes de continuarmos, algumas considerações comuns a todos os experimentos devem ser mencionadas. Primeiramente, em~\cite{pokharel-2006} os autores recomendam que o valor do parâmetro $\sigma$ seja em torno de $15\%$ do desvio-padrão do sinal de entrada; porém, os desvios-padrão do sinal senoidal e do modelo AR foram, respectivamente, $0.45$ e $0.37$. Com $\sigma = 1 \times 10^{-10}$ para o primeiro experimento e $\sigma = 0.9$ para os restantes, observa-se que os valores ótimos usados se encontram muito distantes do recomendado. Deste modo, a regra geral dos $15\%$ não se mostrou muito efetiva, e a abordagem tomada (não só nessa seção, como também na Seção~\ref{section:correntropy:experiments}) foi a de testar diferentes valores do parâmetro até encontrarmos o melhor resultado possível.
+Antes de continuarmos, algumas considerações comuns a todos os experimentos devem ser
+mencionadas. Primeiramente, em~\cite{pokharel-2006} os autores recomendam que o valor
+do parâmetro $\sigma$ seja em torno de $15\%$ do desvio-padrão do sinal de entrada;
+porém, os desvios-padrão do sinal senoidal e do modelo AR foram, respectivamente,
+$0.45$ e $0.37$. Com $\sigma = 1 \times 10^{-10}$ para o primeiro experimento e $\sigma
+	= 0.9$ para os restantes, observa-se que os valores ótimos usados se encontram muito
+distantes do recomendado. Deste modo, a regra geral dos $15\%$ não se mostrou muito
+efetiva, e a abordagem tomada (não só nessa seção, como também na
+Seção~\ref{section:correntropy:experiments}) foi a de testar diferentes valores do
+parâmetro até encontrarmos o melhor resultado possível.
 
-Outro ponto que deve ser reiterado é a importância da correção de ganho aplicada ao fim do algoritmo. Sem ela, o sinal estimado apresenta amplitudes consideravelmente menores do que o sinal desejado, embora se comporte de modo similar. Esse ajuste é também responsável por um problema comum no filtro, em que a estimação resultante aparenta estar com ruído aditivo. Quando removida a correção de ganho, as amostras dos sinais que apresentaram esse fenômeno encontravam-se todas muito próximas de zero; ou seja, a correção amplificou erros numéricos. Caso isso ocorra, é recomendado que ou $L$ ou $\sigma$ sejam incrementados.
+Outro ponto que deve ser reiterado é a importância da correção de ganho aplicada ao fim
+do algoritmo. Sem ela, o sinal estimado apresenta amplitudes consideravelmente menores
+do que o sinal desejado, embora se comporte de modo similar. Esse ajuste é também
+responsável por um problema comum no filtro, em que a estimação resultante aparenta
+estar com ruído aditivo. Quando removida a correção de ganho, as amostras dos sinais
+que apresentaram esse fenômeno encontravam-se todas muito próximas de zero; ou seja, a
+correção amplificou erros numéricos. Caso isso ocorra, é recomendado que ou $L$ ou
+$\sigma$ sejam incrementados.
 
-Finalmente, um último detalhe envolve a escolha conjunta dos valores de $L$ e $\sigma$. Após os testes, foi constatado que aumentar indiscriminadamente a ordem do filtro não é recomendado; no geral, deve-se priorizar valores pequenos, até mesmo $L = 1$, e incrementar a ordem aos poucos conforme a necessidade. Ademais, escolher um desvio $\sigma$ grande em conjunto a um $L$ alto pode resultar em amostras aberrantes no início da estimação, afetando seu desvio-padrão e, consequentemente, a correção de ganho (em casos extremos, os \textit{outliers} acabam fazendo com que o fator aplicado praticamente zere as outras amostras). Um modo de diagnosticar um par inadequado de parâmetros é computando o número de condicionamento da matriz de correntropia $\mathbf{V}_{xx}$: foi observado que matrizes com número de condicionamento maior que $10^3$ normalmente apresentavam maus resultados, salvo raras exceções.
+Finalmente, um último detalhe envolve a escolha conjunta dos valores de $L$ e $\sigma$.
+Após os testes, foi constatado que aumentar indiscriminadamente a ordem do filtro não é
+recomendado; no geral, deve-se priorizar valores pequenos, até mesmo $L = 1$, e
+incrementar a ordem aos poucos conforme a necessidade. Ademais, escolher um desvio
+$\sigma$ grande em conjunto a um $L$ alto pode resultar em amostras aberrantes no
+início da estimação, afetando seu desvio-padrão e, consequentemente, a correção de
+ganho (em casos extremos, os \textit{outliers} acabam fazendo com que o fator aplicado
+praticamente zere as outras amostras). Um modo de diagnosticar um par inadequado de
+parâmetros é computando o número de condicionamento da matriz de correntropia
+$\mathbf{V}_{xx}$: foi observado que matrizes com número de condicionamento maior que
+$10^3$ normalmente apresentavam maus resultados, salvo raras exceções.
 
 \section{Método proposto}
 
-Assim como no caso do Filtro de Wiener, foi necessário introduzir algumas etapas adicionais ao algoritmo para possibilitar a aplicação do Filtro de Correntropia no contexto do trabalho. O problema da não-estacionariedade de sinais de áudio foi novamente mitigado por meio da técnica de \textit{overlap-add}. Além disso, o desvio $\sigma$ não foi ajustado manualmente, mas sim variado de modo adaptativo: a cada bloco processado, o valor do parâmetro 
-é definido de modo a otimizar a estimação local --- ou seja, do bloco --- de acordo com uma medida escolhida (ou seja, uma decisão de projeto). Essa abordagem emergiu como alternativa à opção de manter o desvio constante durante todo o processamento, estratégia que resultou em estimações ruidosas e errôneas para todos os valores de $L$ e $\sigma$ experimentados.
+Assim como no caso do Filtro de Wiener, foi necessário introduzir algumas etapas
+adicionais ao algoritmo para possibilitar a aplicação do Filtro de Correntropia no
+contexto do trabalho. O problema da não-estacionariedade de sinais de áudio foi
+novamente mitigado por meio da técnica de \textit{overlap-add}. Além disso, o desvio
+$\sigma$ não foi ajustado manualmente, mas sim variado de modo adaptativo: a cada bloco
+processado, o valor do parâmetro é definido de modo a otimizar a estimação local --- ou
+seja, do bloco --- de acordo com uma medida escolhida (ou seja, uma decisão de
+projeto). Essa abordagem emergiu como alternativa à opção de manter o desvio constante
+durante todo o processamento, estratégia que resultou em estimações ruidosas e errôneas
+para todos os valores de $L$ e $\sigma$ experimentados.
 
 \begin{figure}[!ht]
-    \centering
-    \input{images/correntropia/method}
-    \caption[Ilustração do método utilizado para o Filtro de Correntropia]{Ilustração do método de \textit{overlap-add} com $\sigma$ adaptativo, utilizado na implementação prática do Filtro de Correntropia, para a $i$-ésima iteração.}
-    \label{fig:correntropy:method}
+	\centering
+	\input{images/correntropia/method}
+	\caption[Ilustração do método utilizado para o Filtro de Correntropia]{Ilustração do método de \textit{overlap-add} com $\sigma$ adaptativo, utilizado na implementação prática do Filtro de Correntropia, para a $i$-ésima iteração.}
+	\label{fig:correntropy:method}
 \end{figure}
 
-A Figura~\ref{fig:correntropy:method} ilustra o método em sua $i$-ésima iteração. Os sinais $x_i[n]$ e $y_i[n]$ são sequências de comprimento $M$ (o tamanho da janela) com as amostras da gravação não-distorcida e da observação, respectivamente, a serem usadas. Com estes sinais (e as $L - 1$ amostras anteriores de $x[n]$, utilizadas como condições iniciais), são computadas várias instâncias do bloco $\hat{d}_i[n]$\symbl{$\hat{d}_i{[n]}$}{Sinal desejado estimado na $i$-ésima iteração do método de estimação}, de tamanho $M$, com o Filtro de Correntropia, cada uma com um desvio $\sigma$ diferente. A instância que resultar no melhor valor para uma medida estipulada é usada na geração de $\hat{d}[n]$. Ademais, é possível aplicar um janelamento antes da adição de $\hat{d}_i[n]$ na estimação final; só é preciso que a escolha da janela e do salto entre iterações $H$ seja feita com cuidado, de modo a manter a condição de \textit{constant overlap-add}. Como todo o processamento é feito no domínio temporal, não foi aplicado nenhum janelamento de pré-processamento (além do retangular no instante da extração do bloco).
+A Figura~\ref{fig:correntropy:method} ilustra o método em sua $i$-ésima iteração. Os
+sinais $x_i[n]$ e $y_i[n]$ são sequências de comprimento $M$ (o tamanho da janela) com
+as amostras da gravação não-distorcida e da observação, respectivamente, a serem
+usadas. Com estes sinais (e as $L - 1$ amostras anteriores de $x[n]$, utilizadas como
+condições iniciais), são computadas várias instâncias do bloco
+$\hat{d}_i[n]$\symbl{$\hat{d}_i{[n]}$}{Sinal desejado estimado na $i$-ésima iteração do
+método de estimação}, de tamanho $M$, com o Filtro de Correntropia, cada uma com um
+desvio $\sigma$ diferente. A instância que resultar no melhor valor para uma medida
+estipulada é usada na geração de $\hat{d}[n]$. Ademais, é possível aplicar um
+janelamento antes da adição de $\hat{d}_i[n]$ na estimação final; só é preciso que a
+escolha da janela e do salto entre iterações $H$ seja feita com cuidado, de modo a
+manter a condição de \textit{constant overlap-add}. Como todo o processamento é feito
+no domínio temporal, não foi aplicado nenhum janelamento de pré-processamento (além do
+retangular no instante da extração do bloco).
 
 \section{Experimentos}
 \label{section:correntropy:experiments}
 
-Os experimentos a seguir foram executados com as mesmas faixas de áudio da Seção~\ref{section:wf:experiments}: a gravação da flauta hulusi como sinal original $x[n]$, e o diálogo de \textit{Mansfield Park} como ruído $r[n]$; ambas com os mesmos pré-condicionamentos anteriormente especificados (mono, taxa de amostragem de $44.1$~kHz, \textit{bitdepth} de 16~bits, e ganho de normalização para 0~dB). O leitor que queira refrescar a memória é encorajado a revisitar as Figuras~\ref{fig:wf:spectogram-reference} e~\ref{fig:wf:spectogram-dialogue}, as quais apresentam os espectrogramas dos sinais. Os experimentos feitos foram os mesmos da Seção~\ref{section:wf:experiments}, e as condições de cada um serão brevemente recapituladas por questão de conveniência.
+Os experimentos a seguir foram executados com as mesmas faixas de áudio da
+Seção~\ref{section:wf:experiments}: a gravação da flauta hulusi como sinal original
+$x[n]$, e o diálogo de \textit{Mansfield Park} como ruído $r[n]$; ambas com os mesmos
+pré-condicionamentos anteriormente especificados (mono, taxa de amostragem de
+$44.1$~kHz, \textit{bitdepth} de 16~bits, e ganho de normalização para 0~dB). O leitor
+que queira refrescar a memória é encorajado a revisitar as
+Figuras~\ref{fig:wf:spectogram-reference} e~\ref{fig:wf:spectogram-dialogue}, as quais
+apresentam os espectrogramas dos sinais. Os experimentos feitos foram os mesmos da
+Seção~\ref{section:wf:experiments}, e as condições de cada um serão brevemente
+recapituladas por questão de conveniência.
 
-A janela escolhida para o processo de síntese foi a função de Hann com $M$ par e sobreposição de $50\%$ ($H = M/2$), definida como
+A janela escolhida para o processo de síntese foi a função de Hann com $M$ par e
+sobreposição de $50\%$ ($H = M/2$), definida como
 \begin{equation}
-    h[n] = \frac{1}{2} - \frac{1}{2}\cos\left(\frac{2\pi n}{M}\right) = \sen^2\left( \frac{\pi n}{M} \right),\ 0 \leq n \leq M-1.
+	h[n] = \frac{1}{2} - \frac{1}{2}\cos\left(\frac{2\pi n}{M}\right) = \sen^2\left( \frac{\pi n}{M} \right),\ 0 \leq n \leq M-1.
 \end{equation}
 Nestas condições, o \textit{overlap-add} é constante e de ganho unitário; assim, nenhum ganho de pós-processamento precisou ser aplicado.
 
-Os experimentos foram todos executados com um filtro de tamanho $L = 1$, o qual apresentou os melhores resultados. A cada iteração, foram testados 250 valores diferentes de $\sigma$, com variação de $10^{-9}$ a $10$ em escala logarítmica, e o bloco que resultasse na maior SDR entre $\hat{d}_i[n]$ e $y_i[n]$ era o escolhido. O tamanho da janela, estipulado como $M = 8820$, foi um meio-termo entre eficiência e complexidade computacional: intervalos maiores tiveram resultados melhores, mas apenas marginalmente, de tal modo que o custo computacional (trabalhar com matrizes com mais de 100 milhões de elementos) não justificou o aumento.
+Os experimentos foram todos executados com um filtro de tamanho $L = 1$, o qual
+apresentou os melhores resultados. A cada iteração, foram testados 250 valores
+diferentes de $\sigma$, com variação de $10^{-9}$ a $10$ em escala logarítmica, e o
+bloco que resultasse na maior SDR entre $\hat{d}_i[n]$ e $y_i[n]$ era o escolhido. O
+tamanho da janela, estipulado como $M = 8820$, foi um meio-termo entre eficiência e
+complexidade computacional: intervalos maiores tiveram resultados melhores, mas apenas
+marginalmente, de tal modo que o custo computacional (trabalhar com matrizes com mais
+de 100 milhões de elementos) não justificou o aumento.
 
 \subsection{\textit{Fades}}
 
-Neste primeiro experimento, avaliaremos a capacidade do método em estimar um sistema linear variante no tempo. Para isso, aplicou-se no início da gravação original um \textit{fade-out} com parâmetros $A_\text{i} = 1$ e $A_\text{f} = 0.2$, e um \textit{fade-in} com parâmetros $A_\text{i} = 0.2$ e $A_\text{f} = 1$ em seu fim. Cada efeito, que seguiu uma curva exponencial, durou aproximadamente 1.5 segundo. Os resultados encontram-se na Tabela~\ref{tab:correntropy:experiment-1}.
+Neste primeiro experimento, avaliaremos a capacidade do método em estimar um sistema
+linear variante no tempo. Para isso, aplicou-se no início da gravação original um
+\textit{fade-out} com parâmetros $A_\text{i} = 1$ e $A_\text{f} = 0.2$, e um
+\textit{fade-in} com parâmetros $A_\text{i} = 0.2$ e $A_\text{f} = 1$ em seu fim. Cada
+efeito, que seguiu uma curva exponencial, durou aproximadamente 1.5 segundo. Os
+resultados encontram-se na Tabela~\ref{tab:correntropy:experiment-1}.
 {\def\arraystretch{1.25}\tabcolsep=10pt
 \begin{table}[!ht]
-    \centering
-    \caption[Resultados do primeiro experimento: \textit{fades}]{Resultados do primeiro experimento principal.}
-    \label{tab:correntropy:experiment-1}
-    \begin{tabular}{cccc}
-        \toprule
-                         & SDR        & PAQM (MOS)   & $\log_{10}(R_{\text{nonlin}})$ \\
-        \midrule
-        $(d, x)$       &  $-11.57$ dB &  $1.17$ & $-0.005$          \\
-        $(d, \hat{d})$ & $21.54$ dB & $1.18$    & $-0.019$         \\ \bottomrule
-    \end{tabular}
+	\centering
+	\caption[Resultados do primeiro experimento: \textit{fades}]{Resultados do primeiro experimento principal.}
+	\label{tab:correntropy:experiment-1}
+	\begin{tabular}{cccc}
+		\toprule
+		               & SDR         & PAQM (MOS) & $\log_{10}(R_{\text{nonlin}})$ \\
+		\midrule
+		$(d, x)$       & $-11.57$ dB & $1.17$     & $-0.005$                       \\
+		$(d, \hat{d})$ & $21.54$ dB  & $1.18$     & $-0.019$                       \\ \bottomrule
+	\end{tabular}
 \end{table}
 }
 
-Houve uma considerável melhoria na SDR, embora não tanto quanto como no Filtro de Wiener. Além disso, podemos notar uma pequena variação nas outras duas medidas. Ouvindo a gravação estimada, percebe-se que o método introduziu um efeito similar ao de limitação de amplitude em momentos de maior intensidade do sinal, o que explica o decréscimo de $\log_{10}(R_{\text{nonlin}})$. Gerando o espectrograma de $\hat{d}[n]$, foi possível observar a presença de harmônicos nesses instantes.
+Houve uma considerável melhoria na SDR, embora não tanto quanto como no Filtro de
+Wiener. Além disso, podemos notar uma pequena variação nas outras duas medidas. Ouvindo
+a gravação estimada, percebe-se que o método introduziu um efeito similar ao de
+limitação de amplitude em momentos de maior intensidade do sinal, o que explica o
+decréscimo de $\log_{10}(R_{\text{nonlin}})$. Gerando o espectrograma de $\hat{d}[n]$,
+foi possível observar a presença de harmônicos nesses instantes.
 
 \subsection{\textit{Fades} com ruído aditivo}
 
-Neste experimento, foi usada exatamente a mesma gravação distorcida do experimento anterior, porém agora com ruído aditivo introduzido no intervalo em que seu ganho estava em $A = 0.2$. É importante reiterar que a faixa de diálogo é consideravelmente mais intensa do que o sinal desejado, o que pode dificultar a estimação. A SNR da observação é $-9.17$~dB. Os resultados encontram-se na Tabela~\ref{tab:correntropy:experiment-2}.
-{\def\arraystretch{1.25}\tabcolsep=10pt
+Neste experimento, foi usada exatamente a mesma gravação distorcida do experimento
+anterior, porém agora com ruído aditivo introduzido no intervalo em que seu ganho
+estava em $A = 0.2$. É importante reiterar que a faixa de diálogo é consideravelmente
+mais intensa do que o sinal desejado, o que pode dificultar a estimação. A SNR da
+observação é $-9.17$~dB. Os resultados encontram-se na
+Tabela~\ref{tab:correntropy:experiment-2}. {\def\arraystretch{1.25}\tabcolsep=10pt
 \begin{table}[!ht]
-    \centering
-    \caption[Resultados do segundo experimento: \textit{fades} com ruído aditivo]{Resultados do segundo experimento principal.}
-    \label{tab:correntropy:experiment-2}
-    \begin{tabular}{cccc}
-        \toprule
-                         & SDR        & PAQM (MOS)   & $\log_{10}(R_{\text{nonlin}})$ \\
-        \midrule
-        $(d, x)$       &  $-11.57$ dB &  $1.17$ & $-0.005$          \\
-        $(d, \hat{d})$ &  $-8.92$ dB & $1.17$   &  $-0.282$              \\ \bottomrule
-    \end{tabular}
+	\centering
+	\caption[Resultados do segundo experimento: \textit{fades} com ruído aditivo]{Resultados do segundo experimento principal.}
+	\label{tab:correntropy:experiment-2}
+	\begin{tabular}{cccc}
+		\toprule
+		               & SDR         & PAQM (MOS) & $\log_{10}(R_{\text{nonlin}})$ \\
+		\midrule
+		$(d, x)$       & $-11.57$ dB & $1.17$     & $-0.005$                       \\
+		$(d, \hat{d})$ & $-8.92$ dB  & $1.17$     & $-0.282$                       \\ \bottomrule
+	\end{tabular}
 \end{table}
 }
 
-As notas insatisfatórias são prontamente fundamentadas ao ouvirmos a estimação gerada: o ruído se manteve presente na saída, embora com menos intensidade. Isto ocorreu porque o algoritmo de escolha de $\sigma$ compara $\hat{d}_i[n]$ com $y_i[n]$, logo, blocos que preservaram o ruído aditivo resultaram em uma SDR maior.\footnote{É verdade que o Filtro de Wiener também tenta minimizar a diferença entre a estimação e a observação; porém, como o sinal estimado é computado por meio de uma convolução entre os coeficientes e a entrada, o filtro é incapaz de introduzir as componentes frequenciais adicionais do ruído, limitando a capacidade de permanência deste na estimação.} Isso não significa, porém, que a culpa é somente do método estipulado: usar diretamente $d_i[n]$ para a escolha de $\sigma$ (o que seria inviável na prática) também resultou em uma estimação grosseira, com ganho variável indesejado e artefatos introduzidos.
+As notas insatisfatórias são prontamente fundamentadas ao ouvirmos a estimação gerada:
+o ruído se manteve presente na saída, embora com menos intensidade. Isto ocorreu porque
+o algoritmo de escolha de $\sigma$ compara $\hat{d}_i[n]$ com $y_i[n]$, logo, blocos
+que preservaram o ruído aditivo resultaram em uma SDR maior.\footnote{É verdade que o
+	Filtro de Wiener também tenta minimizar a diferença entre a estimação e a observação;
+	porém, como o sinal estimado é computado por meio de uma convolução entre os
+	coeficientes e a entrada, o filtro é incapaz de introduzir as componentes frequenciais
+	adicionais do ruído, limitando a capacidade de permanência deste na estimação.} Isso
+não significa, porém, que a culpa é somente do método estipulado: usar diretamente
+$d_i[n]$ para a escolha de $\sigma$ (o que seria inviável na prática) também resultou
+em uma estimação grosseira, com ganho variável indesejado e artefatos introduzidos.
 
 \subsection{\textit{Soft clipping}}
 
-O terceiro experimento objetivou avaliar a capacidade do filtro em reproduzir o efeito não-linear de \textit{soft clipping}. Para isso, o sinal original foi processado por uma função que limitou seu pico máximo de amplitude em $-7.5$~dB. Nesse teste, não foi introduzido ruído aditivo. Os resultados encontram-se na Tabela~\ref{tab:correntropy:experiment-3}.
-{\def\arraystretch{1.25}\tabcolsep=10pt
+O terceiro experimento objetivou avaliar a capacidade do filtro em reproduzir o efeito
+não-linear de \textit{soft clipping}. Para isso, o sinal original foi processado por
+uma função que limitou seu pico máximo de amplitude em $-7.5$~dB. Nesse teste, não foi
+introduzido ruído aditivo. Os resultados encontram-se na
+Tabela~\ref{tab:correntropy:experiment-3}. {\def\arraystretch{1.25}\tabcolsep=10pt
 \begin{table}[!ht]
-    \centering
-    \caption[Resultados do terceiro experimento: \textit{soft clipping}]{Resultados do terceiro experimento principal.}
-    \label{tab:correntropy:experiment-3}
-    \begin{tabular}{cccc}
-        \toprule
-                         & SDR        & PAQM (MOS)   & $\log_{10}(R_{\text{nonlin}})$ \\
-        \midrule
-        $(d, x)$       & $19.56$ dB & $1.21$  & $-0.016$                 \\
-        $(d, \hat{d})$ & $17.50$ dB &  $1.18$  & $-0.020$                \\ \bottomrule
-    \end{tabular}
+	\centering
+	\caption[Resultados do terceiro experimento: \textit{soft clipping}]{Resultados do terceiro experimento principal.}
+	\label{tab:correntropy:experiment-3}
+	\begin{tabular}{cccc}
+		\toprule
+		               & SDR        & PAQM (MOS) & $\log_{10}(R_{\text{nonlin}})$ \\
+		\midrule
+		$(d, x)$       & $19.56$ dB & $1.21$     & $-0.016$                       \\
+		$(d, \hat{d})$ & $17.50$ dB & $1.18$     & $-0.020$                       \\ \bottomrule
+	\end{tabular}
 \end{table}
 }
 
-Temos aqui o primeiro caso em que a aplicação do filtro piorou as três medidas consideradas. Ao se ouvir a gravação resultante, pode-se perceber que o efeito proveniente da limitação de amplitude se encontra presente, porém de modo muito mais agressivo. Deste modo, é possível que tenha ocorrido exatamente o mesmo problema do primeiro experimento: na tentativa de estimar o processamento, o filtro introduziu distorções não-lineares indesejadas ao sinal.
+Temos aqui o primeiro caso em que a aplicação do filtro piorou as três medidas
+consideradas. Ao se ouvir a gravação resultante, pode-se perceber que o efeito
+proveniente da limitação de amplitude se encontra presente, porém de modo muito mais
+agressivo. Deste modo, é possível que tenha ocorrido exatamente o mesmo problema do
+primeiro experimento: na tentativa de estimar o processamento, o filtro introduziu
+distorções não-lineares indesejadas ao sinal.
 
 \subsection{\textit{Soft clipping} com ruído aditivo}
 
-Queremos agora verificar se o método é capaz de reproduzir o mesmo efeito de \textit{clipping} do experimento anterior, porém agora com o diálogo introduzido na observação. Diferentemente do segundo experimento, o sinal desejado possui mais energia neste: a SNR da observação é $3.97$~dB. Os resultados encontram-se na Tabela~\ref{tab:correntropy:experiment-4}.
-{\def\arraystretch{1.25}\tabcolsep=10pt
+Queremos agora verificar se o método é capaz de reproduzir o mesmo efeito de
+\textit{clipping} do experimento anterior, porém agora com o diálogo introduzido na
+observação. Diferentemente do segundo experimento, o sinal desejado possui mais energia
+neste: a SNR da observação é $3.97$~dB. Os resultados encontram-se na
+Tabela~\ref{tab:correntropy:experiment-4}. {\def\arraystretch{1.25}\tabcolsep=10pt
 \begin{table}[!ht]
-    \centering
-    \caption[Resultados do quarto experimento: \textit{soft clipping} com ruído aditivo]{Resultados do quarto experimento principal.}
-    \label{tab:correntropy:experiment-4}
-    \begin{tabular}{cccc}
-        \toprule
-                         & SDR        & PAQM (MOS)   & $\log_{10}(R_{\text{nonlin}})$ \\
-        \midrule
-        $(d, x)$       & $19.56$ dB & $1.21$  & $-0.016$                 \\
-        $(d, \hat{d})$ & $4.40$ dB & $1.17$  &  $-0.155$               \\ \bottomrule
-    \end{tabular}
+	\centering
+	\caption[Resultados do quarto experimento: \textit{soft clipping} com ruído aditivo]{Resultados do quarto experimento principal.}
+	\label{tab:correntropy:experiment-4}
+	\begin{tabular}{cccc}
+		\toprule
+		               & SDR        & PAQM (MOS) & $\log_{10}(R_{\text{nonlin}})$ \\
+		\midrule
+		$(d, x)$       & $19.56$ dB & $1.21$     & $-0.016$                       \\
+		$(d, \hat{d})$ & $4.40$ dB  & $1.17$     & $-0.155$                       \\ \bottomrule
+	\end{tabular}
 \end{table}
 }
 
-Considerando os dois experimentos anteriores, as notas (e o sinal estimado) resultantes são facilmente justificáveis. Novamente, o algoritmo proposto favoreceu blocos nos quais o ruído estivesse mais proeminente, pois estes resultavam em altos valores para a SDR. Porém, os resquícios presentes na estimação não foram tão intensos quanto no segundo experimento, muito provavelmente por causa da maior energia do sinal desejado. Ademais, ao ouvirmos a gravação, o efeito de limitação de amplitude não pareceu estar presente.
+Considerando os dois experimentos anteriores, as notas (e o sinal estimado) resultantes
+são facilmente justificáveis. Novamente, o algoritmo proposto favoreceu blocos nos
+quais o ruído estivesse mais proeminente, pois estes resultavam em altos valores para a
+SDR. Porém, os resquícios presentes na estimação não foram tão intensos quanto no
+segundo experimento, muito provavelmente por causa da maior energia do sinal desejado.
+Ademais, ao ouvirmos a gravação, o efeito de limitação de amplitude não pareceu estar
+presente.
 
 \subsection{\textit{Fades} e codificação com perdas}
 
-Este experimento é, de certo modo, uma mistura do primeiro com o terceiro: aplicou-se um algoritmo de compressão com perdas (distorção não-linear) na versão do sinal com \textit{fade-out} e \textit{fade-in} (distorção linear). Foi aplicada uma codificação MP3 com taxa de bits constante de 56 kbps. Os resultados encontram-se na Tabela~\ref{tab:correntropy:experiment-5}.
-{\def\arraystretch{1.25}\tabcolsep=10pt
+Este experimento é, de certo modo, uma mistura do primeiro com o terceiro: aplicou-se
+um algoritmo de compressão com perdas (distorção não-linear) na versão do sinal com
+\textit{fade-out} e \textit{fade-in} (distorção linear). Foi aplicada uma codificação
+MP3 com taxa de bits constante de 56 kbps. Os resultados encontram-se na
+Tabela~\ref{tab:correntropy:experiment-5}. {\def\arraystretch{1.25}\tabcolsep=10pt
 \begin{table}[!ht]
-    \centering
-    \caption[Resultados do quinto experimento: \textit{fades} e codificação com perdas]{Resultados do quinto experimento principal.}
-    \label{tab:correntropy:experiment-5}
-    \begin{tabular}{cccc}
-        \toprule
-                         & SDR        & PAQM (MOS)   & $\log_{10}(R_{\text{nonlin}})$ \\
-        \midrule
-        $(d, x)$       & $-14.77$ dB & $1.17$  &  $-0.032$               \\
-        $(d, \hat{d})$ & $5.64$ dB & $1.17$  &  $-0.330$             \\ \bottomrule
-    \end{tabular}
+	\centering
+	\caption[Resultados do quinto experimento: \textit{fades} e codificação com perdas]{Resultados do quinto experimento principal.}
+	\label{tab:correntropy:experiment-5}
+	\begin{tabular}{cccc}
+		\toprule
+		               & SDR         & PAQM (MOS) & $\log_{10}(R_{\text{nonlin}})$ \\
+		\midrule
+		$(d, x)$       & $-14.77$ dB & $1.17$     & $-0.032$                       \\
+		$(d, \hat{d})$ & $5.64$ dB   & $1.17$     & $-0.330$                       \\ \bottomrule
+	\end{tabular}
 \end{table}
 }
 
-Infelizmente, os valores resultantes das medidas não descrevem completamente o que ocorreu no experimento. Para isso, devemos ouvir a gravação em si, e descobrir que o método introduziu um ruído de potência extremamente alta na estimação. É possível perceber também que o filtro reproduziu o efeito dos \textit{fades}. Logo, a distorção linear foi identificada, mas a não-linear foi ``convertida'' em ruído.
+Infelizmente, os valores resultantes das medidas não descrevem completamente o que
+ocorreu no experimento. Para isso, devemos ouvir a gravação em si, e descobrir que o
+método introduziu um ruído de potência extremamente alta na estimação. É possível
+perceber também que o filtro reproduziu o efeito dos \textit{fades}. Logo, a distorção
+linear foi identificada, mas a não-linear foi ``convertida'' em ruído.
 
 \subsection{\textit{Fades} com ruído aditivo e codificação com perdas}
 
-O último experimento é uma amálgama de todas as condições impostas até agora ao método. O sinal original recebe a distorção (linear) de \textit{fades}; então, soma-se a faixa de diálogo (ruído); por fim, a combinação dos dois sinais é codificada (distorção não-linear). Novamente foi utilizada uma codificação MP3 com taxa de bits constante de 56 kbps. Assim como explicado na Subseção~\ref{subsec:wiener:experiment-6}, o sinal que usaremos como $d[n]$ \emph{não} é o verdadeiro sinal distorcido presente em $y[n]$, pois introduzir o ruído antes do processamento não-linear afeta a geração de $d[n]$. Não foi possível calcular a SNR dessa observação, mas podemos estimar seu limite superior como sendo $-9.17$~dB. Os resultados encontram-se na Tabela~\ref{tab:correntropy:experiment-6}.
-{\def\arraystretch{1.25}\tabcolsep=10pt
+O último experimento é uma amálgama de todas as condições impostas até agora ao método.
+O sinal original recebe a distorção (linear) de \textit{fades}; então, soma-se a faixa
+de diálogo (ruído); por fim, a combinação dos dois sinais é codificada (distorção
+não-linear). Novamente foi utilizada uma codificação MP3 com taxa de bits constante de
+56 kbps. Assim como explicado na Subseção~\ref{subsec:wiener:experiment-6}, o sinal que
+usaremos como $d[n]$ \emph{não} é o verdadeiro sinal distorcido presente em $y[n]$,
+pois introduzir o ruído antes do processamento não-linear afeta a geração de $d[n]$.
+Não foi possível calcular a SNR dessa observação, mas podemos estimar seu limite
+superior como sendo $-9.17$~dB. Os resultados encontram-se na
+Tabela~\ref{tab:correntropy:experiment-6}. {\def\arraystretch{1.25}\tabcolsep=10pt
 \begin{table}[!ht]
-    \centering
-    \caption[Resultados do sexto experimento: \textit{fades} com ruído aditivo e codificação com perdas]{Resultados do sexto experimento principal.}
-    \label{tab:correntropy:experiment-6}
-    \begin{tabular}{cccc}
-        \toprule
-                         & SDR        & PAQM (MOS)   & $\log_{10}(R_{\text{nonlin}})$ \\
-        \midrule
-        $(d, x)$       & $-14.77$ dB & $1.17$  &  $-0.032$               \\
-        $(d, \hat{d})$ & $-9.08$ dB & $1.17$  &   $-0.422$              \\ \bottomrule
-    \end{tabular}
+	\centering
+	\caption[Resultados do sexto experimento: \textit{fades} com ruído aditivo e codificação com perdas]{Resultados do sexto experimento principal.}
+	\label{tab:correntropy:experiment-6}
+	\begin{tabular}{cccc}
+		\toprule
+		               & SDR         & PAQM (MOS) & $\log_{10}(R_{\text{nonlin}})$ \\
+		\midrule
+		$(d, x)$       & $-14.77$ dB & $1.17$     & $-0.032$                       \\
+		$(d, \hat{d})$ & $-9.08$ dB  & $1.17$     & $-0.422$                       \\ \bottomrule
+	\end{tabular}
 \end{table}
 }
 
-Curiosamente, a estimação resultante também foi uma amálgama de tudo que observamos nos experimentos anteriores: o filtro conseguiu reproduzir os efeitos lineares de \textit{fade-out} e \textit{fade-in}, a codificação com perdas introduziu um ruído de alta potência na gravação, e a faixa de diálogo não foi completamente removida. Assim, mesmo que os resultados não tenham sido satisfatórios, eles foram consistentes, e, com isso, sabemos quais são as capacidades do filtro (com o método proposto) no contexto do trabalho.
+Curiosamente, a estimação resultante também foi uma amálgama de tudo que observamos nos
+experimentos anteriores: o filtro conseguiu reproduzir os efeitos lineares de
+\textit{fade-out} e \textit{fade-in}, a codificação com perdas introduziu um ruído de
+alta potência na gravação, e a faixa de diálogo não foi completamente removida. Assim,
+mesmo que os resultados não tenham sido satisfatórios, eles foram consistentes, e, com
+isso, sabemos quais são as capacidades do filtro (com o método proposto) no contexto do
+trabalho.

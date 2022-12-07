@@ -1,7 +1,7 @@
 \begin{tikzpicture}[node distance=1.25cm]
     \node[dspnodeopen,dsp/label=above] (x) {$x_i[n]$};
     \node[dspnodeopen,dsp/label=above, right=of x, xshift=3.5cm] (d) {$y_i[n]$};
-    
+
     % Window before FFT
     \node[dspfilter, minimum width=2.5cm, minimum height=1.25cm, below=of x] (windowfilter-analysis) {};
     \pic at (windowfilter-analysis) {window};
@@ -11,11 +11,11 @@
 
     \node[dspfilter, minimum width=2.5cm, minimum height=1cm, below=of windowfilter-analysis] (fft-x) {FFT};
     \node[dspfilter, minimum width=2.5cm, minimum height=1cm, below=of wiener] (fft-w) {FFT};
-    
+
     \node[dspmixer, below=of fft-x, xshift=2cm] (prod) {};
-    
+
     \node[dspfilter, minimum width=2.5cm, minimum height=1cm, below=of prod] (ifft) {IFFT\abbrev{IFFT}{\textit{Inverse Fast Fourier Transform}}};
-    
+
     % Window before FFT
     \node[dspfilter, minimum width=2.5cm, minimum height=1.25cm, right=of ifft] (windowfilter-synthesis) {};
     \pic at (windowfilter-synthesis) {window};
@@ -40,7 +40,7 @@
 
 	\draw[dspconn] (prod) -- (ifft);
 	\draw[dspconn] (ifft) -- (windowfilter-synthesis);
-	
+
 	\node[dspnodeopen,dsp/label=above, right=of windowfilter-synthesis] (ola-pic) {$\hat{d}[n]$};
 	\draw[dspconn] (windowfilter-synthesis) -- node[midway,below] {$+$} (ola-pic);
     \pic[right=of windowfilter-synthesis, yshift=-0.5cm, xshift=0.25cm] {ola};

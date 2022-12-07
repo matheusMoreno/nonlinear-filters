@@ -10,10 +10,10 @@
         \end{matrix}$
         \endgroup
     };
-    
+
     \node[dspnodeopen, dsp/label=above, left=of sigma] (x-n) {$\textbf{x}[n]$};
     \node[dspnodeopen, dsp/label=left, above=of sigma] (x-i) {$\textbf{x}[k]$};
-    
+
     \draw[dspconn] (x-n) -- (sigma);
     \draw[dspconn] (x-i) -- (sigma);
     \node[coordinate, right=of sigma, xshift=1cm, inner sep=0pt] (sum-cord) {};

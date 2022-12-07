@@ -20,7 +20,7 @@
     \draw[dspconn] (corr) -- (win);
     \draw[dspconn] (mid-corr) |- (algorithm);
     \draw[dspconn] (mid-d) |- (algorithm);
-    
+
 	\node[dspnodeopen, dsp/label=left, below right=of win, yshift=0.75cm, xshift=0.25cm] (ola-pic) {$\hat{d}[n]$};
 	\draw[dspconn] (win) -| node[midway,below, xshift=0.3cm, yshift=-0.25cm] {$+$} (ola-pic);
     \pic[xshift=-2cm, yshift=-1.5cm] at (ola-pic) {ola};

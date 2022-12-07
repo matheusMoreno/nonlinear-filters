@@ -41,7 +41,7 @@
 
     \node[dspfilter, left=of log10, minimum height=1cm, xshift=0.75cm] (time-freq-mean) {$\frac{1}{N}\sum_m\sum_z$};
     \draw[dspconn] (time-freq-mean) -- node[midway,above] {$\mathcal{L}_n$} (log10);
-    
+
     %\node[below=of paqm, yshift=0.5cm] (whitespace) {};
 
     \node[dspfilter, left=of time-freq-mean, minimum height=1cm, xshift=0.75cm] (abs) {$|\cdot|$};
@@ -69,7 +69,7 @@
     \node[dspfilter, minimum height=1.5cm, above=of timespread-dhat] (linearfilter-dhat) {};
     \pic[] at (linearfilter-dhat) {linearfilter};
     \draw[dspconn] (linearfilter-dhat) -- node[midway,right] {$p_{\hat{d}}[m, z]$} (timespread-dhat);
-    
+
     \node[dspfilter, minimum height=1.5cm, above=of linearfilter-dhat] (freqconversion-dhat) {};
     \pic[] at (freqconversion-dhat) {freqconversion-func};
     \draw[dspconn] (freqconversion-dhat) -- node[midway,right] {$P_{\hat{d}}[m, z]$} (linearfilter-dhat);
@@ -103,7 +103,7 @@
     \node[dspfilter, minimum height=1.5cm, above=of timespread-d] (linearfilter-d) {};
     \pic[] at (linearfilter-d) {linearfilter};
     \draw[dspconn] (linearfilter-d) -- node[midway,left] {$p_d[m, z]$} (timespread-d);
-    
+
     \node[dspfilter, minimum height=1.5cm, above=of linearfilter-d] (freqconversion-d) {};
     \pic[] at (freqconversion-d) {freqconversion-func};
     \draw[dspconn] (freqconversion-d) -- node[midway,left] {$P_d[m, z]$} (linearfilter-d);
@@ -128,7 +128,7 @@
 	\draw[dspconn] (comparison-node-d) -- (compare);
 	\draw[dspconn] (comparison-node-dhat) -- (compare);
 	\draw[dspconn] (compare) |- (scaling);
-	
+
     %%%%%%%%%%%% Some labels
     \path (fft-d) -- (fft-dhat) node[midway, align=center] (fft-label) {1. Cálculo do\\Espectrograma};
     \path (freqconversion-d) -- (freqconversion-dhat) node[midway, align=center] (freqconversion-label) {2a. Conversão de\\Hertz para Bark};

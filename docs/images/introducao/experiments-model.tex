@@ -15,10 +15,10 @@
     \draw[dspconn] (r) -- (f);
 
     \draw[dspconn] (f) -- node[midway,right] {$y[n]$} (w);
-    
+
     \node[dspnodeopen, dsp/label=right, right=of f-zero] (d) {$d[n]$};
     \node[dspnodeopen, dsp/label=right, right=of w] (dhat) {$\hat{d}[n]$};
-    
+
     \draw[dspconn] (w) -- (dhat);
     \draw[dspconn] (f-zero) -- (d);
 \end{tikzpicture}
